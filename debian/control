@@ -1,0 +1,12 @@
+Source: u-boot-overo
+Section: unknown
+Priority: extra
+Maintainer: unknown <bgat@mercury.billgatliff.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+
+Package: u-boot-overo
+Architecture: all
+Depends: ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>

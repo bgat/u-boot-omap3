@@ -1,12 +1,12 @@
 Source: u-boot-overo
-Section: unknown
+Section: bootloader
 Priority: extra
-Maintainer: unknown <bgat@mercury.billgatliff.com>
+Maintainer: Bill Gatliff <bgat@billgatliff.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.3
 
 Package: u-boot-overo
-Architecture: all
+Architecture: armhf
 Depends: ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: Das U-Boot bootloader for Gumstix Overo
+ The U-Boot bootloader (including MLO) for Gumstix Overo

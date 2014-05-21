@@ -1,4 +1,33 @@
 #!/usr/bin/make -f
+export DH_VERBOSE=1
+
+# TODO: these must match the arch specified by debuild;
+#       we should confirm this, but we aren't.
+ARCH=arm
+CROSS_COMPILE=arm-linux-gnueabihf-
+
+JOBS=$(shell expr 2 \* $(shell cat /proc/cpuinfo | grep processor | wc -l))
+KARGS=ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -j$(JOBS) V=1
+DESTDIR=debian/u-boot-overo
+export KCONFIG_CONFIG=./config
 
 %:
-	dh $@ 
+	dh $@
+
+override_dh_auto_clean:
+	$(MAKE) $(KARGS) distclean
+	rm -rf $(DESTDIR) $(DESTDIR_FW)
+
+override_dh_auto_build:
+	$(MAKE) $(KARGS) omap3_overo_config
+	$(MAKE) $(KARGS) all
+
+override_dh_auto_install:
+	mkdir -p $(DESTDIR)/boot
+	cp -v MLO $(DESTDIR)/boot
+	cp -v u-boot.img $(DESTDIR)/boot
+	cp -v uEnv.txt $(DESTDIR)/boot
+
+override_dh_auto_configure:
+override_dh_auto_test:
+	# pass

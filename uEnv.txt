@@ -1,0 +1,8 @@
+#mmcroot=/dev/mmcblk0p2 rw
+#mmcrootfstype=ext4 rootwait fixrtc
+ 
+##Un-comment to enable systemd in Debian Wheezy
+#optargs=quiet init=/lib/systemd/systemd
+ 
+#Boot the old non device tree kernel: (v3.7.x/v3.9.x)
+#uenvcmd=run loadimage; run mmcargs; bootz ${loadaddr}

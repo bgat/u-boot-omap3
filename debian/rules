@@ -3,13 +3,12 @@ export DH_VERBOSE=1
 
 # TODO: these must match the arch specified by debuild;
 #       we should confirm this, but we aren't.
-ARCH=arm
-CROSS_COMPILE=arm-linux-gnueabihf-
+ARCH=$(DEB_HOST_GNU_CPU)
+CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 
 JOBS=$(shell expr 2 \* $(shell cat /proc/cpuinfo | grep processor | wc -l))
 KARGS=ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -j$(JOBS) V=1
 DESTDIR=debian/u-boot-overo
-export KCONFIG_CONFIG=./config
 
 %:
 	dh $@
@@ -30,4 +29,4 @@ override_dh_auto_install:
 
 override_dh_auto_configure:
 override_dh_auto_test:
-	# pass
+	true # pass

@@ -4,23 +4,7 @@
  * (C) Copyright 2002
  * Wolfgang Denk, wd@denx.de
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /* #define DEBUG */
@@ -125,7 +109,6 @@ DECLARE_GLOBAL_DATA_PTR;
 /************************************************************************/
 
 #include <video_font.h>			/* Get font data, width and height */
-#include <video_font_data.h>
 
 #ifdef CONFIG_VIDEO_LOGO
 #include <video_logo.h>			/* Get logo data, width and height */
@@ -809,23 +792,11 @@ static void video_encoder_init (void)
 
 	/* Initialize the I2C */
 	debug ("[VIDEO ENCODER] Initializing I2C bus...\n");
+#ifdef CONFIG_SYS_I2C
+	i2c_init_all();
+#else
 	i2c_init (CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
-
-#ifdef CONFIG_FADS
-	/* Reset ADV7176 chip */
-	debug ("[VIDEO ENCODER] Resetting encoder...\n");
-	(*(int *) BCSR4) &= ~(1 << 21);
-
-	/* Wait for 5 ms inside the reset */
-	debug ("[VIDEO ENCODER] Waiting for encoder reset...\n");
-	udelay (5000);
-
-	/* Take ADV7176 out of reset */
-	(*(int *) BCSR4) |= 1 << 21;
-
-	/* Wait for 5 ms after the reset */
-	udelay (5000);
-#endif	/* CONFIG_FADS */
+#endif
 
 	/* Send configuration */
 #ifdef DEBUG
@@ -873,16 +844,6 @@ static void video_ctrl_init (void *memptr)
 	debug ("[VIDEO CTRL] Turning off video controller...\n");
 	SETBIT (immap->im_vid.vid_vccr, VIDEO_VCCR_VON, 0);
 
-#ifdef CONFIG_FADS
-	/* Turn on Video Port LED */
-	debug ("[VIDEO CTRL] Turning off video port led...\n");
-	SETBIT (*(int *) BCSR4, VIDEO_BCSR4_VIDLED_BIT, 1);
-
-	/* Disable internal clock */
-	debug ("[VIDEO CTRL] Disabling internal clock...\n");
-	SETBIT (*(int *) BCSR4, VIDEO_BCSR4_EXTCLK_BIT, 0);
-#endif
-
 	/* Generate and make active a new video mode */
 	debug ("[VIDEO CTRL] Generating video mode...\n");
 	video_mode_generate ();
@@ -905,15 +866,6 @@ static void video_ctrl_init (void *memptr)
 	immap->im_ioport.iop_pdpar = 0x1fff;
 	immap->im_ioport.iop_pddir = 0x0000;
 
-#ifdef CONFIG_FADS
-	/* Turn on Video Port Clock - ONLY AFTER SET VCCR TO ENABLE EXTERNAL CLOCK */
-	debug ("[VIDEO CTRL] Turning on video clock...\n");
-	SETBIT (*(int *) BCSR4, VIDEO_BCSR4_EXTCLK_BIT, 1);
-
-	/* Turn on Video Port LED */
-	debug ("[VIDEO CTRL] Turning on video port led...\n");
-	SETBIT (*(int *) BCSR4, VIDEO_BCSR4_VIDLED_BIT, 0);
-#endif
 #ifdef CONFIG_RRVISION
 	debug ("PC5->Output(1): enable PAL clock");
 	immap->im_ioport.iop_pcpar &= ~(0x0400);
@@ -1166,9 +1118,7 @@ static void *video_logo (void)
 {
 	u16 *screen = video_fb_address, width = VIDEO_COLS;
 #ifdef VIDEO_INFO
-# ifndef CONFIG_FADS
 	char temp[32];
-# endif
 	char info[80];
 #endif /* VIDEO_INFO */
 
@@ -1186,24 +1136,15 @@ static void *video_logo (void)
 	sprintf (info, "    Wolfgang DENK, wd@denx.de");
 	video_drawstring (VIDEO_INFO_X, VIDEO_INFO_Y + VIDEO_FONT_HEIGHT * 2,
 					info);
-#ifndef CONFIG_FADS		/* all normal boards */
+
 	/* leave one blank line */
 
-	sprintf (info, "MPC823 CPU at %s MHz, %ld MB RAM, %ld MB Flash",
+	sprintf(info, "MPC823 CPU at %s MHz, %ld MiB RAM, %ld MiB Flash",
 		strmhz(temp, gd->cpu_clk),
 		gd->ram_size >> 20,
 		gd->bd->bi_flashsize >> 20 );
 	video_drawstring (VIDEO_INFO_X, VIDEO_INFO_Y + VIDEO_FONT_HEIGHT * 4,
 					info);
-#else				/* FADS :-( */
-	sprintf (info, "MPC823 CPU at 50 MHz on FADS823 board");
-	video_drawstring (VIDEO_INFO_X, VIDEO_INFO_Y + VIDEO_FONT_HEIGHT,
-					  info);
-
-	sprintf (info, "2MB FLASH - 8MB DRAM - 4MB SRAM");
-	video_drawstring (VIDEO_INFO_X, VIDEO_INFO_Y + VIDEO_FONT_HEIGHT * 2,
-					  info);
-#endif
 #endif
 
 	return video_fb_address + VIDEO_LOGO_HEIGHT * VIDEO_LINE_LEN;

@@ -2,42 +2,28 @@
  * (C) Copyright 2010 - 2011
  * NVIDIA Corporation <www.nvidia.com>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/ap20.h>
-#include <asm/arch/clk_rst.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/flow.h>
 #include <asm/arch/pinmux.h>
-#include <asm/arch/pmc.h>
-#include <asm/arch/tegra20.h>
-#include <asm/arch/warmboot.h>
+#include <asm/arch/tegra.h>
+#include <asm/arch-tegra/ap.h>
+#include <asm/arch-tegra/apb_misc.h>
+#include <asm/arch-tegra/clk_rst.h>
+#include <asm/arch-tegra/pmc.h>
+#include <asm/arch-tegra/warmboot.h>
 #include "warmboot_avp.h"
 
 #define DEBUG_RESET_CORESIGHT
 
 void wb_start(void)
 {
-	struct pmux_tri_ctlr *pmt = (struct pmux_tri_ctlr *)NV_PA_APB_MISC_BASE;
+	struct apb_misc_pp_ctlr *apb_misc =
+				(struct apb_misc_pp_ctlr *)NV_PA_APB_MISC_BASE;
 	struct pmc_ctlr *pmc = (struct pmc_ctlr *)NV_PA_PMC_BASE;
 	struct flow_ctlr *flow = (struct flow_ctlr *)NV_PA_FLOW_BASE;
 	struct clk_rst_ctlr *clkrst =
@@ -49,7 +35,7 @@ void wb_start(void)
 	u32 reg;
 
 	/* enable JTAG & TBE */
-	writel(CONFIG_CTL_TBE | CONFIG_CTL_JTAG, &pmt->pmt_cfg_ctl);
+	writel(CONFIG_CTL_TBE | CONFIG_CTL_JTAG, &apb_misc->cfg_ctl);
 
 	/* Are we running where we're supposed to be? */
 	asm volatile (
@@ -58,7 +44,7 @@ void wb_start(void)
 					/* no input, no clobber list */
 	);
 
-	if (reg != AP20_WB_RUN_ADDRESS)
+	if (reg != NV_WB_RUN_ADDRESS)
 		goto do_reset;
 
 	/* Are we running with AVP? */
@@ -214,7 +200,7 @@ void wb_start(void)
 
 	reg = PLLM_OUT1_RSTN_RESET_DISABLE | PLLM_OUT1_CLKEN_ENABLE |
 	      PLLM_OUT1_RATIO_VAL_8;
-	writel(reg, &clkrst->crc_pll[CLOCK_ID_MEMORY].pll_out);
+	writel(reg, &clkrst->crc_pll[CLOCK_ID_MEMORY].pll_out[0]);
 
 	reg = SCLK_SWAKE_FIQ_SRC_PLLM_OUT1 | SCLK_SWAKE_IRQ_SRC_PLLM_OUT1 |
 	      SCLK_SWAKE_RUN_SRC_PLLM_OUT1 | SCLK_SWAKE_IDLE_SRC_PLLM_OUT1 |

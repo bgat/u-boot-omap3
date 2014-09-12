@@ -4,20 +4,7 @@
  * Dave Liu <daveliu@freescale.com>
  * based on source code of Shlomi Gridish
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include "common.h"
@@ -26,6 +13,8 @@
 #include "asm/io.h"
 #include "asm/immap_qe.h"
 #include "qe.h"
+
+#define MPC85xx_DEVDISR_QE_DISABLE	0x1
 
 qe_map_t		*qe_immr = NULL;
 static qe_snum_t	snums[QE_NUM_OF_SNUM];
@@ -58,21 +47,22 @@ uint qe_muram_alloc(uint size, uint align)
 	uint	savebase;
 
 	align_mask = align - 1;
-	savebase = gd->mp_alloc_base;
+	savebase = gd->arch.mp_alloc_base;
 
-	if ((off = (gd->mp_alloc_base & align_mask)) != 0)
-		gd->mp_alloc_base += (align - off);
+	off = gd->arch.mp_alloc_base & align_mask;
+	if (off != 0)
+		gd->arch.mp_alloc_base += (align - off);
 
 	if ((off = size & align_mask) != 0)
 		size += (align - off);
 
-	if ((gd->mp_alloc_base + size) >= gd->mp_alloc_top) {
-		gd->mp_alloc_base = savebase;
+	if ((gd->arch.mp_alloc_base + size) >= gd->arch.mp_alloc_top) {
+		gd->arch.mp_alloc_base = savebase;
 		printf("%s: ran out of ram.\n",  __FUNCTION__);
 	}
 
-	retloc = gd->mp_alloc_base;
-	gd->mp_alloc_base += size;
+	retloc = gd->arch.mp_alloc_base;
+	gd->arch.mp_alloc_base += size;
 
 	memset((void *)&qe_immr->muram[retloc], 0, size);
 
@@ -113,18 +103,21 @@ static void qe_sdma_init(void)
  * we just need to know what the SNUMs are for the threads.
  */
 static u8 thread_snum[] = {
+/* Evthreads 16-29 are not supported in MPC8309 */
+#if !defined(CONFIG_MPC8309)
 	0x04, 0x05, 0x0c, 0x0d,
 	0x14, 0x15, 0x1c, 0x1d,
 	0x24, 0x25, 0x2c, 0x2d,
-	0x34, 0x35, 0x88, 0x89,
-	0x98, 0x99, 0xa8, 0xa9,
-	0xb8, 0xb9, 0xc8, 0xc9,
-	0xd8, 0xd9, 0xe8, 0xe9,
-	0x08, 0x09, 0x18, 0x19,
-	0x28, 0x29, 0x38, 0x39,
-	0x48, 0x49, 0x58, 0x59,
-	0x68, 0x69, 0x78, 0x79,
-	0x80, 0x81
+	0x34, 0x35,
+#endif
+	0x88, 0x89, 0x98, 0x99,
+	0xa8, 0xa9, 0xb8, 0xb9,
+	0xc8, 0xc9, 0xd8, 0xd9,
+	0xe8, 0xe9, 0x08, 0x09,
+	0x18, 0x19, 0x28, 0x29,
+	0x38, 0x39, 0x48, 0x49,
+	0x58, 0x59, 0x68, 0x69,
+	0x78, 0x79, 0x80, 0x81
 };
 
 static void qe_snums_init(void)
@@ -174,14 +167,14 @@ void qe_init(uint qe_base)
 	/*
 	 * Upload microcode to IRAM for those SOCs which do not have ROM in QE.
 	 */
-	qe_upload_firmware((const void *)CONFIG_SYS_QE_FMAN_FW_ADDR);
+	qe_upload_firmware((const void *)CONFIG_SYS_QE_FW_ADDR);
 
 	/* enable the microcode in IRAM */
 	out_be32(&qe_immr->iram.iready,QE_IRAM_READY);
 #endif
 
-	gd->mp_alloc_base = QE_DATAONLY_BASE;
-	gd->mp_alloc_top = gd->mp_alloc_base + QE_DATAONLY_SIZE;
+	gd->arch.mp_alloc_base = QE_DATAONLY_BASE;
+	gd->arch.mp_alloc_top = gd->arch.mp_alloc_base + QE_DATAONLY_SIZE;
 
 	qe_sdma_init();
 	qe_snums_init();
@@ -217,7 +210,7 @@ void qe_assign_page(uint snum, uint para_ram_base)
    from CLKn pin, we have te change the function.
  */
 
-#define BRG_CLK		(gd->brg_clk)
+#define BRG_CLK		(gd->arch.brg_clk)
 
 int qe_set_brg(uint brg, uint rate)
 {
@@ -326,7 +319,9 @@ int qe_upload_firmware(const struct qe_firmware *firmware)
 	size_t calc_size = sizeof(struct qe_firmware);
 	size_t length;
 	const struct qe_header *hdr;
-
+#ifdef CONFIG_DEEP_SLEEP
+	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+#endif
 	if (!firmware) {
 		printf("Invalid address\n");
 		return -EINVAL;
@@ -339,6 +334,9 @@ int qe_upload_firmware(const struct qe_firmware *firmware)
 	if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
 	    (hdr->magic[2] != 'F')) {
 		printf("Not a microcode\n");
+#ifdef CONFIG_DEEP_SLEEP
+		setbits_be32(&gur->devdisr, MPC85xx_DEVDISR_QE_DISABLE);
+#endif
 		return -EPERM;
 	}
 

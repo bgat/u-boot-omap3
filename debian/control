@@ -14,13 +14,13 @@ Description: Das U-Boot bootloader for OMAP3 targets
 
 
 Package: u-boot-overo
-Architecture: armhf armel
+Architecture: all
 Depends: u-boot-omap3, ${misc:Depends}
 Description: Das U-Boot bootloader for Overo
  The U-Boot bootloader (including MLO) for Overo
 
 Package: u-boot-overostorm
-Architecture: armhf armel
+Architecture: all
 Depends: u-boot-omap3, ${misc:Depends}
 Description: Das U-Boot bootloader for Overo Storm
  The U-Boot bootloader (including MLO) for Overo Storm

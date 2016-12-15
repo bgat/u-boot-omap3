@@ -77,7 +77,7 @@ int scc_initialize(bd_t *bis)
 	dev = (struct eth_device*) malloc(sizeof *dev);
 	memset(dev, 0, sizeof *dev);
 
-	sprintf(dev->name, "SCC");
+	strcpy(dev->name, "SCC");
 	dev->iobase = 0;
 	dev->priv   = 0;
 	dev->init   = scc_init;
@@ -159,7 +159,8 @@ static int scc_recv (struct eth_device *dev)
 #endif
 		} else {
 			/* Pass the packet up to the protocol layers. */
-			NetReceive (NetRxPackets[rxIdx], length - 4);
+			net_process_received_packet(net_rx_packets[rxIdx],
+						    length - 4);
 		}
 
 
@@ -192,10 +193,6 @@ static int scc_init (struct eth_device *dev, bd_t * bis)
 	scc_enet_t *pram_ptr;
 
 	volatile immap_t *immr = (immap_t *) CONFIG_SYS_IMMR;
-
-#if defined(CONFIG_LWMON)
-	reset_phy();
-#endif
 
 	pram_ptr = (scc_enet_t *) & (immr->im_cpm.cp_dparam[PROFF_ENET]);
 
@@ -284,7 +281,7 @@ static int scc_init (struct eth_device *dev, bd_t * bis)
 	for (i = 0; i < PKTBUFSRX; i++) {
 		rtx->rxbd[i].cbd_sc = BD_ENET_RX_EMPTY;
 		rtx->rxbd[i].cbd_datlen = 0;	/* Reset */
-		rtx->rxbd[i].cbd_bufaddr = (uint) NetRxPackets[i];
+		rtx->rxbd[i].cbd_bufaddr = (uint) net_rx_packets[i];
 	}
 
 	rtx->rxbd[PKTBUFSRX - 1].cbd_sc |= BD_ENET_RX_WRAP;
@@ -343,7 +340,7 @@ static int scc_init (struct eth_device *dev, bd_t * bis)
 	pram_ptr->sen_gaddr3 = 0x0;	/* Group Address Filter 3 (unused) */
 	pram_ptr->sen_gaddr4 = 0x0;	/* Group Address Filter 4 (unused) */
 
-#define ea eth_get_dev()->enetaddr
+#define ea eth_get_ethaddr()
 	pram_ptr->sen_paddrh = (ea[5] << 8) + ea[4];
 	pram_ptr->sen_paddrm = (ea[3] << 8) + ea[2];
 	pram_ptr->sen_paddrl = (ea[1] << 8) + ea[0];
@@ -446,26 +443,6 @@ static int scc_init (struct eth_device *dev, bd_t * bis)
 	immr->im_cpm.cp_pbdir |= PB_ENET_TENA;
 #else
 #error Configuration Error: exactly ONE of PB_ENET_TENA, PC_ENET_TENA must be defined
-#endif
-
-#if defined(CONFIG_NETVIA)
-#if defined(PA_ENET_PDN)
-	immr->im_ioport.iop_papar &= ~PA_ENET_PDN;
-	immr->im_ioport.iop_padir |= PA_ENET_PDN;
-	immr->im_ioport.iop_padat |= PA_ENET_PDN;
-#elif defined(PB_ENET_PDN)
-	immr->im_cpm.cp_pbpar &= ~PB_ENET_PDN;
-	immr->im_cpm.cp_pbdir |= PB_ENET_PDN;
-	immr->im_cpm.cp_pbdat |= PB_ENET_PDN;
-#elif defined(PC_ENET_PDN)
-	immr->im_ioport.iop_pcpar &= ~PC_ENET_PDN;
-	immr->im_ioport.iop_pcdir |= PC_ENET_PDN;
-	immr->im_ioport.iop_pcdat |= PC_ENET_PDN;
-#elif defined(PD_ENET_PDN)
-	immr->im_ioport.iop_pdpar &= ~PD_ENET_PDN;
-	immr->im_ioport.iop_pddir |= PD_ENET_PDN;
-	immr->im_ioport.iop_pddat |= PD_ENET_PDN;
-#endif
 #endif
 
 	/*

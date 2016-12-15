@@ -9,12 +9,7 @@
 #ifndef __CONFIG_ORIGEN_H
 #define __CONFIG_ORIGEN_H
 
-#include <configs/exynos4-dt.h>
-
-#define CONFIG_SYS_PROMPT		"ORIGEN # "
-
-#undef CONFIG_DEFAULT_DEVICE_TREE
-#define CONFIG_DEFAULT_DEVICE_TREE	exynos4210-origen
+#include <configs/exynos4-common.h>
 
 /* High Level Configuration Options */
 #define CONFIG_EXYNOS4210		1	/* which is a EXYNOS4210 SoC */
@@ -37,16 +32,11 @@
 
 #define CONFIG_MACH_TYPE		MACH_TYPE_ORIGEN
 
-/* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (80 * SZ_1M))
-
 /* select serial console configuration */
 #define CONFIG_SERIAL2
 #define CONFIG_BAUDRATE			115200
 
 /* Console configuration */
-#define CONFIG_SYS_CONSOLE_INFO_QUIET
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 #define CONFIG_DEFAULT_CONSOLE		"console=ttySAC1,115200n8\0"
 
 #define CONFIG_SYS_MEM_TOP_HIDE	(1 << 20)	/* ram console */
@@ -58,20 +48,42 @@
 #define S5P_CHECK_DIDLE			0xBAD00000
 #define S5P_CHECK_LPA			0xABAD0000
 
-#undef CONFIG_CMD_PING
-#define CONFIG_CMD_ELF
-#define CONFIG_CMD_DHCP
-#undef CONFIG_CMD_NET
-#undef CONFIG_CMD_NFS
+#define CONFIG_SUPPORT_RAW_INITRD
 
 /* MMC SPL */
-#define CONFIG_SPL
 #define COPY_BL2_FNPTR_ADDR	0x02020030
 #define CONFIG_SPL_TEXT_BASE	0x02021410
 
-#define CONFIG_BOOTCOMMAND	"fatload mmc 0 40007000 uImage; bootm 40007000"
-
-#define CONFIG_IDENT_STRING		" for ORIGEN"
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"loadaddr=0x40007000\0" \
+	"rdaddr=0x48000000\0" \
+	"kerneladdr=0x40007000\0" \
+	"ramdiskaddr=0x48000000\0" \
+	"console=ttySAC2,115200n8\0" \
+	"mmcdev=0\0" \
+	"bootenv=uEnv.txt\0" \
+	"loadbootenv=load mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"importbootenv=echo Importing environment from mmc ...; " \
+		"env import -t $loadaddr $filesize\0" \
+        "loadbootscript=load mmc ${mmcdev} ${loadaddr} boot.scr\0" \
+        "bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+                "source ${loadaddr}\0"
+#define CONFIG_BOOTCOMMAND \
+	"if mmc rescan; then " \
+		"echo SD/MMC found on device ${mmcdev};" \
+		"if run loadbootenv; then " \
+			"echo Loaded environment from ${bootenv};" \
+			"run importbootenv;" \
+		"fi;" \
+		"if test -n $uenvcmd; then " \
+			"echo Running uenvcmd ...;" \
+			"run uenvcmd;" \
+		"fi;" \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"fi; " \
+	"fi;" \
+	"load mmc ${mmcdev} ${loadaddr} uImage; bootm ${loadaddr} "
 
 #define CONFIG_CLK_1000_400_200
 
@@ -90,7 +102,7 @@
 
 #define CONFIG_SYS_INIT_SP_ADDR		0x02040000
 
-/* U-boot copy size from boot Media to DRAM.*/
+/* U-Boot copy size from boot Media to DRAM.*/
 #define COPY_BL2_SIZE		0x80000
 #define BL2_START_OFFSET	((CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)/512)
 #define BL2_SIZE_BLOC_COUNT	(COPY_BL2_SIZE/512)

@@ -45,7 +45,7 @@
 /* Rather than repeat this expression each time, add a define for it */
 #if defined(CONFIG_CMD_IDE) || \
 	defined(CONFIG_CMD_SATA) || \
-	defined(CONFIG_CMD_SCSI) || \
+	defined(CONFIG_SCSI) || \
 	defined(CONFIG_CMD_USB) || \
 	defined(CONFIG_CMD_PART) || \
 	defined(CONFIG_CMD_GPT) || \
@@ -75,12 +75,8 @@
 #define CONFIG_CMD_BMP
 #endif
 
-#ifndef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT	"=> "
-#endif
-
-#ifndef CONFIG_SYS_HZ
-#define CONFIG_SYS_HZ		1000
+#ifndef CONFIG_SYS_PBSIZE
+#define CONFIG_SYS_PBSIZE	(CONFIG_SYS_CBSIZE + 128)
 #endif
 
 #ifndef CONFIG_FIT_SIGNATURE
@@ -89,6 +85,18 @@
 
 #ifdef CONFIG_DISABLE_IMAGE_LEGACY
 #undef CONFIG_IMAGE_FORMAT_LEGACY
+#endif
+
+#ifdef CONFIG_DM_I2C
+# ifdef CONFIG_SYS_I2C
+#  error "Cannot define CONFIG_SYS_I2C when CONFIG_DM_I2C is used"
+# endif
+#endif
+
+#ifndef CONFIG_CMDLINE
+#undef CONFIG_CMDLINE_EDITING
+#undef CONFIG_SYS_LONGHELP
+#undef CONFIG_MENU
 #endif
 
 #endif	/* __CONFIG_FALLBACKS_H */

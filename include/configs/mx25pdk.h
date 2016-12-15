@@ -14,13 +14,11 @@
 #define CONFIG_MX25
 #define CONFIG_SYS_TEXT_BASE		0x81200000
 #define CONFIG_MXC_GPIO
+#define CONFIG_SYS_FSL_CLK
 
 #define CONFIG_SYS_TIMER_RATE		32768
 #define CONFIG_SYS_TIMER_COUNTER	\
 	(&((struct gpt_regs *)IMX_GPT1_BASE)->counter)
-
-#define CONFIG_DISPLAY_CPUINFO
-#define CONFIG_DISPLAY_BOARDINFO
 
 #define CONFIG_CMDLINE_TAG		/* enable passing of ATAGs */
 #define CONFIG_SETUP_MEMORY_TAGS
@@ -81,26 +79,18 @@
 #define CONFIG_SYS_LONGHELP
 
 /* U-Boot commands */
-#include <config_cmd_default.h>
-#define CONFIG_OF_LIBFDT
-#define CONFIG_CMD_BOOTZ
-#define CONFIG_CMD_CACHE
-#define CONFIG_CMD_MMC
-#define CONFIG_CMD_EXT2
-#define CONFIG_CMD_FAT
 
 /* Ethernet */
 #define CONFIG_FEC_MXC
 #define CONFIG_FEC_MXC_PHYADDR		0x1f
 #define CONFIG_MII
-#define CONFIG_CMD_NET
 #define CONFIG_ENV_OVERWRITE
 
 /* ESDHC driver */
 #define CONFIG_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_FSL_ESDHC
-#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+#define CONFIG_SYS_FSL_ESDHC_ADDR	IMX_MMC_SDHC1_BASE
 #define CONFIG_SYS_FSL_ESDHC_NUM	1
 
 /* PMIC Configs */
@@ -113,9 +103,10 @@
 #define CONFIG_DOS_PARTITION
 
 /* I2C Configs */
-#define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 
 /* RTC */
 #define CONFIG_RTC_IMXDI
@@ -123,17 +114,9 @@
 
 /* Ethernet Configs */
 
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_MII
-#define CONFIG_CMD_NET
-
-#define CONFIG_BOOTDELAY	1
 
 #define CONFIG_LOADADDR		0x81000000	/* loadaddr env var */
 #define CONFIG_SYS_LOAD_ADDR	CONFIG_LOADADDR
-
-#define CONFIG_DEFAULT_FDT_FILE		"imx25-pdk.dtb"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
@@ -225,11 +208,8 @@
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
-#define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_AUTO_COMPLETE
 
-/* Print Buffer Size */
-#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
 #define CONFIG_SYS_MAXARGS	       16
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 

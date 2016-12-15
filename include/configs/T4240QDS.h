@@ -11,30 +11,21 @@
 #define __CONFIG_H
 
 #define CONFIG_T4240QDS
-#define CONFIG_PHYS_64BIT
 
 #define CONFIG_FSL_SATA_V2
 #define CONFIG_PCIE4
+#define CONFIG_FSL_CAAM			/* Enable SEC/CAAM */
 
 #define CONFIG_ICS307_REFCLK_HZ		25000000  /* ICS307 ref clk freq */
 
 #ifdef CONFIG_RAMBOOT_PBL
 #define CONFIG_SYS_FSL_PBL_PBI board/freescale/t4qds/t4_pbi.cfg
-#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t4qds/t4_rcw.cfg
 #if !defined(CONFIG_NAND) && !defined(CONFIG_SDCARD)
 #define CONFIG_RAMBOOT_TEXT_BASE        CONFIG_SYS_TEXT_BASE
 #define CONFIG_RESET_VECTOR_ADDRESS     0xfffffffc
 #else
-#define CONFIG_SPL
-#define CONFIG_SPL_MPC8XXX_INIT_DDR_SUPPORT
-#define CONFIG_SPL_ENV_SUPPORT
-#define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_FLUSH_IMAGE
 #define CONFIG_SPL_TARGET		"u-boot-with-spl.bin"
-#define CONFIG_SPL_LIBGENERIC_SUPPORT
-#define CONFIG_SPL_LIBCOMMON_SUPPORT
-#define CONFIG_SPL_I2C_SUPPORT
-#define CONFIG_SPL_DRIVERS_MISC_SUPPORT
 #define CONFIG_FSL_LAW                 /* Use common FSL init code */
 #define CONFIG_SYS_TEXT_BASE		0x00201000
 #define CONFIG_SPL_TEXT_BASE		0xFFFD8000
@@ -44,18 +35,17 @@
 #define BOOT_PAGE_OFFSET		0x27000
 
 #ifdef	CONFIG_NAND
-#define CONFIG_SPL_NAND_SUPPORT
 #define CONFIG_SYS_NAND_U_BOOT_SIZE	(768 << 10)
 #define CONFIG_SYS_NAND_U_BOOT_DST	0x00200000
 #define CONFIG_SYS_NAND_U_BOOT_START	0x00200000
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	(256 << 10)
 #define CONFIG_SYS_LDSCRIPT	"arch/powerpc/cpu/mpc85xx/u-boot-nand.lds"
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t4qds/t4_nand_rcw.cfg
 #define CONFIG_SPL_NAND_BOOT
 #endif
 
 #ifdef	CONFIG_SDCARD
 #define	CONFIG_RESET_VECTOR_ADDRESS	0x200FFC
-#define CONFIG_SPL_MMC_SUPPORT
 #define CONFIG_SPL_MMC_MINIMAL
 #define CONFIG_SYS_MMC_U_BOOT_SIZE	(768 << 10)
 #define CONFIG_SYS_MMC_U_BOOT_DST	0x00200000
@@ -65,6 +55,7 @@
 #define	CONFIG_SYS_MPC85XX_NO_RESETVEC
 #endif
 #define CONFIG_SYS_LDSCRIPT	"arch/powerpc/cpu/mpc85xx/u-boot.lds"
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t4qds/t4_sd_rcw.cfg
 #define CONFIG_SPL_MMC_BOOT
 #endif
 
@@ -237,7 +228,7 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_CS3_FTIM1		(FTIM1_GPCM_TACO(0xff) | \
 					FTIM1_GPCM_TRAD(0x3f))
 #define CONFIG_SYS_CS3_FTIM2		(FTIM2_GPCM_TCS(0x0e) | \
-					FTIM2_GPCM_TCH(0x0) | \
+					FTIM2_GPCM_TCH(0x8) | \
 					FTIM2_GPCM_TWP(0x1f))
 #define CONFIG_SYS_CS3_FTIM3		0x0
 
@@ -281,7 +272,6 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE }
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
-#define CONFIG_MTD_NAND_VERIFY_WRITE
 #define CONFIG_CMD_NAND
 
 #define CONFIG_SYS_NAND_BLOCK_SIZE	(128 * 1024)
@@ -344,7 +334,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_RAMBOOT
 #endif
 
-
 /* I2C */
 #define CONFIG_SYS_FSL_I2C_SPEED	100000	/* I2C speed */
 #define CONFIG_SYS_FSL_I2C2_SPEED	100000	/* I2C2 speed */
@@ -402,13 +391,8 @@ unsigned long get_board_ddr_clk(void);
 /*
  * eSPI - Enhanced SPI
  */
-#define CONFIG_FSL_ESPI
-#define CONFIG_SPI_FLASH
-#define CONFIG_SPI_FLASH_SST
-#define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED         10000000
 #define CONFIG_SF_DEFAULT_MODE          0
-
 
 /* Qman/Bman */
 #ifndef CONFIG_NOBQFMAN
@@ -417,10 +401,26 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_BMAN_MEM_BASE	0xf4000000
 #define CONFIG_SYS_BMAN_MEM_PHYS	0xff4000000ull
 #define CONFIG_SYS_BMAN_MEM_SIZE	0x02000000
+#define CONFIG_SYS_BMAN_SP_CENA_SIZE    0x4000
+#define CONFIG_SYS_BMAN_SP_CINH_SIZE    0x1000
+#define CONFIG_SYS_BMAN_CENA_BASE       CONFIG_SYS_BMAN_MEM_BASE
+#define CONFIG_SYS_BMAN_CENA_SIZE       (CONFIG_SYS_BMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_BMAN_CINH_BASE       (CONFIG_SYS_BMAN_MEM_BASE + \
+					CONFIG_SYS_BMAN_CENA_SIZE)
+#define CONFIG_SYS_BMAN_CINH_SIZE       (CONFIG_SYS_BMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_BMAN_SWP_ISDR_REG    0xE08
 #define CONFIG_SYS_QMAN_NUM_PORTALS	50
 #define CONFIG_SYS_QMAN_MEM_BASE	0xf6000000
 #define CONFIG_SYS_QMAN_MEM_PHYS	0xff6000000ull
 #define CONFIG_SYS_QMAN_MEM_SIZE	0x02000000
+#define CONFIG_SYS_QMAN_SP_CENA_SIZE    0x4000
+#define CONFIG_SYS_QMAN_SP_CINH_SIZE    0x1000
+#define CONFIG_SYS_QMAN_CENA_BASE       CONFIG_SYS_QMAN_MEM_BASE
+#define CONFIG_SYS_QMAN_CENA_SIZE       (CONFIG_SYS_QMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_QMAN_CINH_BASE       (CONFIG_SYS_QMAN_MEM_BASE + \
+					CONFIG_SYS_QMAN_CENA_SIZE)
+#define CONFIG_SYS_QMAN_CINH_SIZE       (CONFIG_SYS_QMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_QMAN_SWP_ISDR_REG	0xE08
 
 #define CONFIG_SYS_DPAA_FMAN
 #define CONFIG_SYS_DPAA_PME
@@ -481,7 +481,6 @@ unsigned long get_board_ddr_clk(void);
 #define FM2_10GEC2_PHY_ADDR	0x3
 #endif
 
-
 /* SATA */
 #ifdef CONFIG_FSL_SATA_V2
 #define CONFIG_LIBATA
@@ -498,7 +497,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_LBA48
 #define CONFIG_CMD_SATA
 #define CONFIG_DOS_PARTITION
-#define CONFIG_CMD_EXT2
 #endif
 
 #ifdef CONFIG_FMAN_ENET
@@ -507,15 +505,18 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_PHY_GIGE		/* Include GbE speed/duplex detection */
 #endif
 
+/* Hash command with SHA acceleration supported in hardware */
+#ifdef CONFIG_FSL_CAAM
+#define CONFIG_CMD_HASH
+#define CONFIG_SHA_HW_ACCEL
+#endif
+
 /*
 * USB
 */
-#define CONFIG_CMD_USB
-#define CONFIG_USB_STORAGE
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_FSL
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
-#define CONFIG_CMD_EXT2
 #define CONFIG_HAS_FSL_DR_USB
 
 #define CONFIG_MMC
@@ -524,10 +525,7 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_FSL_ESDHC
 #define CONFIG_SYS_FSL_ESDHC_ADDR       CONFIG_SYS_MPC85xx_ESDHC_ADDR
 #define CONFIG_SYS_FSL_ESDHC_BROKEN_TIMEOUT
-#define CONFIG_CMD_MMC
 #define CONFIG_GENERIC_MMC
-#define CONFIG_CMD_EXT2
-#define CONFIG_CMD_FAT
 #define CONFIG_DOS_PARTITION
 #define CONFIG_SYS_FSL_MMC_HAS_CAPBLT_VS33
 #define CONFIG_ESDHC_DETECT_QUIRK \
@@ -537,7 +535,6 @@ unsigned long get_board_ddr_clk(void);
 	(!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC_WIDTH8))
 #endif
 
-#define CONFIG_BOOTDELAY	10	/* -1 disables auto-boot */
 
 #define __USB_PHY_TYPE	utmi
 
@@ -570,7 +567,7 @@ unsigned long get_board_ddr_clk(void);
 	"consoledev=ttyS0\0"					\
 	"ramdiskaddr=2000000\0"					\
 	"ramdiskfile=t4240qds/ramdisk.uboot\0"			\
-	"fdtaddr=c00000\0"					\
+	"fdtaddr=1e00000\0"					\
 	"fdtfile=t4240qds/t4240qds.dtb\0"				\
 	"bdev=sda3\0"
 

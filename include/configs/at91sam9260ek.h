@@ -43,10 +43,6 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_SKIP_LOWLEVEL_INIT
 #define CONFIG_BOARD_EARLY_INIT_F
-#define CONFIG_DISPLAY_CPUINFO
-
-#define CONFIG_CMD_BOOTZ
-#define CONFIG_OF_LIBFDT
 
 /* general purpose I/O */
 #define CONFIG_ATMEL_LEGACY		/* required until (g)pio is fixed */
@@ -64,7 +60,6 @@
 #define	CONFIG_RED_LED		AT91_PIN_PA9	/* this is the power led */
 #define	CONFIG_GREEN_LED	AT91_PIN_PA6	/* this is the user led */
 
-#define CONFIG_BOOTDELAY	3
 
 /*
  * BOOTP options
@@ -77,20 +72,7 @@
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-#undef CONFIG_CMD_BDI
-#undef CONFIG_CMD_FPGA
-#undef CONFIG_CMD_IMI
-#undef CONFIG_CMD_IMLS
-#undef CONFIG_CMD_LOADS
-#undef CONFIG_CMD_SOURCE
-
-#define CONFIG_CMD_PING		1
-#define CONFIG_CMD_DHCP		1
 #define CONFIG_CMD_NAND		1
-#define CONFIG_CMD_MMC
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_USB		1
 
 /*
  * SDRAM: 1 bank, min 32, max 128 MB
@@ -131,15 +113,16 @@
 # define CONFIG_MACH_TYPE MACH_TYPE_AT91SAM9260EK
 #endif
 
-/* DataFlash */
 #ifndef CONFIG_AT91SAM9G20EK_2MMC
+/* DataFlash */
 #define CONFIG_ATMEL_DATAFLASH_SPI
 #define CONFIG_HAS_DATAFLASH		1
-#define CONFIG_SYS_SPI_WRITE_TOUT		(5*CONFIG_SYS_HZ)
 #define CONFIG_SYS_MAX_DATAFLASH_BANKS		2
 #define CONFIG_SYS_DATAFLASH_LOGIC_ADDR_CS0	0xC0000000	/* CS0 */
 #define CONFIG_SYS_DATAFLASH_LOGIC_ADDR_CS1	0xD0000000	/* CS1 */
 #define AT91_SPI_CLK			15000000
+#else
+/* Enable MMC. The MCCK is conflicted with DataFlash */
 #endif
 
 #ifdef CONFIG_AT91SAM9G20EK
@@ -191,7 +174,6 @@
 #define CONFIG_SYS_USB_OHCI_REGS_BASE		0x00500000	/* AT91SAM9260_UHP_BASE */
 #define CONFIG_SYS_USB_OHCI_SLOT_NAME		"at91sam9260"
 #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
-#define CONFIG_USB_STORAGE		1
 
 #define CONFIG_SYS_LOAD_ADDR			0x22000000	/* load address */
 
@@ -259,10 +241,8 @@
 	"root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait"
 #endif
 
-#define CONFIG_SYS_PROMPT		"U-Boot> "
 #define CONFIG_SYS_CBSIZE		256
 #define CONFIG_SYS_MAXARGS		16
-#define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
 #define CONFIG_SYS_LONGHELP		1
 #define CONFIG_CMDLINE_EDITING	1
 #define CONFIG_AUTO_COMPLETE

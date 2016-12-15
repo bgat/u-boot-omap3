@@ -14,7 +14,7 @@
 #include <part.h>
 #include <malloc.h>
 #include <asm/io.h>
-#include <asm/errno.h>
+#include <linux/errno.h>
 #include <asm/byteorder.h>
 #include <asm/arch/clk.h>
 #include <asm/arch/hardware.h>
@@ -32,7 +32,12 @@
 # define MCI_BUS 0
 #endif
 
-static int initialized = 0;
+struct atmel_mci_priv {
+	struct mmc_config	cfg;
+	struct atmel_mci	*mci;
+	unsigned int		initialized:1;
+	unsigned int		curr_clk;
+};
 
 /* Read Atmel MCI IP version */
 static unsigned int atmel_mci_get_version(struct atmel_mci *mci)
@@ -48,41 +53,76 @@ static unsigned int atmel_mci_get_version(struct atmel_mci *mci)
  */
 static void dump_cmd(u32 cmdr, u32 arg, u32 status, const char* msg)
 {
-	printf("gen_atmel_mci: CMDR %08x (%2u) ARGR %08x (SR: %08x) %s\n",
-		cmdr, cmdr&0x3F, arg, status, msg);
+	debug("gen_atmel_mci: CMDR %08x (%2u) ARGR %08x (SR: %08x) %s\n",
+	      cmdr, cmdr & 0x3F, arg, status, msg);
 }
 
 /* Setup for MCI Clock and Block Size */
 static void mci_set_mode(struct mmc *mmc, u32 hz, u32 blklen)
 {
-	atmel_mci_t *mci = mmc->priv;
+	struct atmel_mci_priv *priv = mmc->priv;
+	atmel_mci_t *mci = priv->mci;
 	u32 bus_hz = get_mci_clk_rate();
 	u32 clkdiv = 255;
+	unsigned int version = atmel_mci_get_version(mci);
+	u32 clkodd = 0;
+	u32 mr;
 
 	debug("mci: bus_hz is %u, setting clock %u Hz, block size %u\n",
 		bus_hz, hz, blklen);
 	if (hz > 0) {
-		/* find lowest clkdiv yielding a rate <= than requested */
-		for (clkdiv=0; clkdiv<255; clkdiv++) {
-			if ((bus_hz / (clkdiv+1) / 2) <= hz)
-				break;
+		if (version >= 0x500) {
+			clkdiv = DIV_ROUND_UP(bus_hz, hz) - 2;
+			if (clkdiv > 511)
+				clkdiv = 511;
+
+			clkodd = clkdiv & 1;
+			clkdiv >>= 1;
+
+			debug("mci: setting clock %u Hz, block size %u\n",
+			      bus_hz / (clkdiv * 2 + clkodd + 2), blklen);
+		} else {
+			/* find clkdiv yielding a rate <= than requested */
+			for (clkdiv = 0; clkdiv < 255; clkdiv++) {
+				if ((bus_hz / (clkdiv + 1) / 2) <= hz)
+					break;
+			}
+			debug("mci: setting clock %u Hz, block size %u\n",
+			      (bus_hz / (clkdiv + 1)) / 2, blklen);
+
 		}
 	}
-	printf("mci: setting clock %u Hz, block size %u\n",
-		(bus_hz / (clkdiv+1)) / 2, blklen);
-
+	if (version >= 0x500)
+		priv->curr_clk = bus_hz / (clkdiv * 2 + clkodd + 2);
+	else
+		priv->curr_clk = (bus_hz / (clkdiv + 1)) / 2;
 	blklen &= 0xfffc;
-	/* On some platforms RDPROOF and WRPROOF are ignored */
-	writel((MMCI_BF(CLKDIV, clkdiv)
-		 | MMCI_BF(BLKLEN, blklen)
-		 | MMCI_BIT(RDPROOF)
-		 | MMCI_BIT(WRPROOF)), &mci->mr);
+
+	mr = MMCI_BF(CLKDIV, clkdiv);
+
+	/* MCI IP version >= 0x200 has R/WPROOF */
+	if (version >= 0x200)
+		mr |= MMCI_BIT(RDPROOF) | MMCI_BIT(WRPROOF);
+
 	/*
-	 * On some new platforms BLKLEN in mci->mr is ignored.
-	 * Should use the BLKLEN in the block register.
+	 * MCI IP version >= 0x500 use bit 16 as clkodd.
+	 * MCI IP version < 0x500 use upper 16 bits for blklen.
 	 */
-	writel(MMCI_BF(BLKLEN, blklen), &mci->blkr);
-	initialized = 1;
+	if (version >= 0x500)
+		mr |= MMCI_BF(CLKODD, clkodd);
+	else
+		mr |= MMCI_BF(BLKLEN, blklen);
+
+	writel(mr, &mci->mr);
+
+	/* MCI IP version >= 0x200 has blkr */
+	if (version >= 0x200)
+		writel(MMCI_BF(BLKLEN, blklen), &mci->blkr);
+
+	if (mmc->card_caps & mmc->cfg->host_caps & MMC_MODE_HS)
+		writel(MMCI_BIT(HSMODE), &mci->cfg);
+
+	priv->initialized = 1;
 }
 
 /* Return the CMDR with flags for a given command and data packet */
@@ -165,14 +205,15 @@ io_fail:
 static int
 mci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 {
-	atmel_mci_t *mci = mmc->priv;
+	struct atmel_mci_priv *priv = mmc->priv;
+	atmel_mci_t *mci = priv->mci;
 	u32 cmdr;
 	u32 error_flags = 0;
 	u32 status;
 
-	if (!initialized) {
+	if (!priv->initialized) {
 		puts ("MCI not initialized!\n");
-		return COMM_ERR;
+		return -ECOMM;
 	}
 
 	/* Figure out the transfer arguments */
@@ -197,10 +238,10 @@ mci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 
 	if ((status & error_flags) & MMCI_BIT(RTOE)) {
 		dump_cmd(cmdr, cmd->cmdarg, status, "Command Time Out");
-		return TIMEOUT;
+		return -ETIMEDOUT;
 	} else if (status & error_flags) {
 		dump_cmd(cmdr, cmd->cmdarg, status, "Command Failed");
-		return COMM_ERR;
+		return -ECOMM;
 	}
 
 	/* Copy the response to the response buffer */
@@ -262,7 +303,7 @@ mci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 			if (status) {
 				dump_cmd(cmdr, cmd->cmdarg, status,
 					"Data Transfer Failed");
-				return COMM_ERR;
+				return -ECOMM;
 			}
 		}
 
@@ -274,7 +315,7 @@ mci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 			if (status & error_flags) {
 				dump_cmd(cmdr, cmd->cmdarg, status,
 					"DTIP Wait Failed");
-				return COMM_ERR;
+				return -ECOMM;
 			}
 			i++;
 		} while ((status & MMCI_BIT(DTIP)) && i < 10000);
@@ -284,13 +325,21 @@ mci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 		}
 	}
 
+	/*
+	 * After the switch command, wait for 8 clocks before the next
+	 * command
+	 */
+	if (cmd->cmdidx == MMC_CMD_SWITCH)
+		udelay(8*1000000 / priv->curr_clk); /* 8 clk in us */
+
 	return 0;
 }
 
 /* Entered into mmc structure during driver init */
 static void mci_set_ios(struct mmc *mmc)
 {
-	atmel_mci_t *mci = mmc->priv;
+	struct atmel_mci_priv *priv = mmc->priv;
+	atmel_mci_t *mci = priv->mci;
 	int bus_width = mmc->bus_width;
 	unsigned int version = atmel_mci_get_version(mci);
 	int busw;
@@ -326,7 +375,8 @@ static void mci_set_ios(struct mmc *mmc)
 /* Entered into mmc structure during driver init */
 static int mci_init(struct mmc *mmc)
 {
-	atmel_mci_t *mci = mmc->priv;
+	struct atmel_mci_priv *priv = mmc->priv;
+	atmel_mci_t *mci = priv->mci;
 
 	/* Initialize controller */
 	writel(MMCI_BIT(SWRST), &mci->cr);	/* soft reset */
@@ -360,24 +410,28 @@ int atmel_mci_init(void *regs)
 {
 	struct mmc *mmc;
 	struct mmc_config *cfg;
-	struct atmel_mci *mci;
+	struct atmel_mci_priv *priv;
 	unsigned int version;
 
-	cfg = malloc(sizeof(*cfg));
-	if (cfg == NULL)
-		return -1;
-	memset(cfg, 0, sizeof(*cfg));
+	priv = calloc(1, sizeof(*priv));
+	if (!priv)
+		return -ENOMEM;
 
-	mci = (struct atmel_mci *)regs;
+	cfg = &priv->cfg;
 
 	cfg->name = "mci";
 	cfg->ops = &atmel_mci_ops;
 
+	priv->mci = (struct atmel_mci *)regs;
+	priv->initialized = 0;
+
 	/* need to be able to pass these in on a board by board basis */
 	cfg->voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
-	version = atmel_mci_get_version(mci);
-	if ((version & 0xf00) >= 0x300)
+	version = atmel_mci_get_version(priv->mci);
+	if ((version & 0xf00) >= 0x300) {
 		cfg->host_caps = MMC_MODE_8BIT;
+		cfg->host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz;
+	}
 
 	cfg->host_caps |= MMC_MODE_4BIT;
 
@@ -390,13 +444,13 @@ int atmel_mci_init(void *regs)
 
 	cfg->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
-	mmc = mmc_create(cfg, regs);
+	mmc = mmc_create(cfg, priv);
 
 	if (mmc == NULL) {
-		free(cfg);
-		return -1;
+		free(priv);
+		return -ENODEV;
 	}
-	/* NOTE: possibly leaking the cfg structure */
+	/* NOTE: possibly leaking the priv structure */
 
 	return 0;
 }

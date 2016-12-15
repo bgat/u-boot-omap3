@@ -40,8 +40,6 @@
 #define readl(a) (*((volatile u32 *)(a)))
 #define writel(a, b) (*((volatile u32 *)(b)) = ((volatile u32)a))
 
-#define min_t(type,x,y) ({ type __x = (x); type __y = (y); __x < __y ? __x: __y; })
-
 #ifdef DEBUG
 #define dbg(format, arg...) printf("DEBUG: " format "\n", ## arg)
 #else
@@ -675,7 +673,8 @@ static void td_submit_job (struct usb_device *dev, unsigned long pipe, void *buf
 	__u32 info = 0;
 	unsigned int toggle = 0;
 
-	/* OHCI handles the DATA-toggles itself, we just use the USB-toggle bits for reseting */
+	/* OHCI handles the DATA-toggles itself, we just use the
+	   USB-toggle bits for resetting */
 	if(usb_gettoggle(dev, usb_pipeendpoint(pipe), usb_pipeout(pipe))) {
 		toggle = TD_T_TOGGLE;
 	} else {

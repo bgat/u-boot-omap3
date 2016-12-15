@@ -17,7 +17,6 @@
  * Include common defines/options for all AMCC eval boards
  */
 #define CONFIG_HOSTNAME		dlvision
-#define CONFIG_IDENT_STRING	" dlvision 0.02"
 #include "amcc-common.h"
 
 #define CONFIG_BOARD_EARLY_INIT_F	/* call board_early_init_f */
@@ -32,8 +31,7 @@
 #define PLLMR1_DEFAULT PLLMR1_266_133_66_33
 
 /* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
+#define CONFIG_FIT_DISABLE_SHA256
 
 #define CONFIG_ENV_IS_IN_FLASH	/* use FLASH for environment vars */
 
@@ -58,8 +56,10 @@
 /*
  * Commands additional to the ones defined in amcc-common.h
  */
-#define CONFIG_CMD_CACHE
+#define CONFIG_CMD_DTT
+#undef CONFIG_CMD_DIAG
 #undef CONFIG_CMD_EEPROM
+#undef CONFIG_CMD_IRQ
 
 /*
  * SDRAM configuration (please see cpu/ppc/sdram.[ch])

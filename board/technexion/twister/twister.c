@@ -16,6 +16,8 @@
 #include <asm/omap_gpio.h>
 #include <asm/arch/mmc_host_def.h>
 #include <i2c.h>
+#include <spl.h>
+#include <mmc.h>
 #include <asm/gpio.h>
 #ifdef CONFIG_USB_EHCI
 #include <usb.h>
@@ -90,7 +92,7 @@ int misc_init_r(void)
 	struct tam3517_module_info info;
 	int ret;
 
-	dieid_num_r();
+	omap_die_id_display();
 
 	eth_addr = getenv("ethaddr");
 	if (eth_addr)
@@ -138,7 +140,7 @@ int board_mmc_init(bd_t *bis)
 
 #ifdef CONFIG_SPL_OS_BOOT
 /*
- * Do board specific preperation before SPL
+ * Do board specific preparation before SPL
  * Linux boot
  */
 void spl_board_prepare_for_linux(void)

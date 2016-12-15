@@ -26,7 +26,9 @@ else
 
 obj-$(CONFIG_MP)	+= release.o
 
+ifndef CONFIG_SPL_BUILD
 obj-$(CONFIG_CMD_ERRATA) += cmd_errata.o
+endif
 obj-$(CONFIG_CPM2)	+= commproc.o
 
 obj-$(CONFIG_CPM2)	+= ether_fcc.o
@@ -51,6 +53,8 @@ obj-$(CONFIG_PPC_T1040) += t1040_ids.o
 obj-$(CONFIG_PPC_T1042)	+= t1040_ids.o
 obj-$(CONFIG_PPC_T1020)	+= t1040_ids.o
 obj-$(CONFIG_PPC_T1022)	+= t1040_ids.o
+obj-$(CONFIG_PPC_T1023) += t1024_ids.o
+obj-$(CONFIG_PPC_T1024) += t1024_ids.o
 obj-$(CONFIG_PPC_T2080) += t2080_ids.o
 obj-$(CONFIG_PPC_T2081) += t2080_ids.o
 
@@ -97,6 +101,8 @@ obj-$(CONFIG_PPC_T1040) += t1040_serdes.o
 obj-$(CONFIG_PPC_T1042)	+= t1040_serdes.o
 obj-$(CONFIG_PPC_T1020)	+= t1040_serdes.o
 obj-$(CONFIG_PPC_T1022)	+= t1040_serdes.o
+obj-$(CONFIG_PPC_T1023) += t1024_serdes.o
+obj-$(CONFIG_PPC_T1024) += t1024_serdes.o
 obj-$(CONFIG_PPC_T2080) += t2080_serdes.o
 obj-$(CONFIG_PPC_T2081) += t2080_serdes.o
 
@@ -109,8 +115,5 @@ obj-y	+= speed.o
 endif
 obj-y	+= tlb.o
 obj-y	+= traps.o
-
-# Stub implementations of cache management functions for USB
-obj-y += cache.o
 
 endif # not minimal

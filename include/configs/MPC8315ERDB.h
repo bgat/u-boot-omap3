@@ -167,7 +167,7 @@
 /*
  * The reserved memory
  */
-#define CONFIG_SYS_MONITOR_LEN	(384 * 1024) /* Reserve 384 kB for Mon */
+#define CONFIG_SYS_MONITOR_LEN	(512 * 1024) /* Reserve 512 kB for Mon */
 #define CONFIG_SYS_MALLOC_LEN	(512 * 1024) /* Reserved for malloc */
 
 /*
@@ -239,10 +239,9 @@
 #define CONFIG_CMD_MTDPARTS
 #define MTDIDS_DEFAULT			"nand0=e0600000.flash"
 #define MTDPARTS_DEFAULT		\
-	"mtdparts=e0600000.flash:512k(uboot),128k(env),3m@1m(kernel),-(fs)"
+	"mtdparts=e0600000.flash:512k(uboot),128k(env),6m@1m(kernel),-(fs)"
 
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
-#define CONFIG_MTD_NAND_VERIFY_WRITE	1
 #define CONFIG_CMD_NAND			1
 #define CONFIG_NAND_FSL_ELBC		1
 #define CONFIG_SYS_NAND_BLOCK_SIZE	16384
@@ -291,7 +290,6 @@
  * Serial Port
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		(CONFIG_83XX_CLKIN * 2)
@@ -301,14 +299,6 @@
 
 #define CONFIG_SYS_NS16550_COM1	(CONFIG_SYS_IMMR+0x4500)
 #define CONFIG_SYS_NS16550_COM2	(CONFIG_SYS_IMMR+0x4600)
-
-/* Use the HUSH parser */
-#define CONFIG_SYS_HUSH_PARSER
-
-/* Pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -367,11 +357,8 @@
 #define CONFIG_SYS_PCIE2_IO_PHYS	0xD1000000
 #define CONFIG_SYS_PCIE2_IO_SIZE	0x00800000
 
-#define CONFIG_PCI
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCIE
-
-#define CONFIG_PCI_PNP		/* do pci plug-and-play */
 
 #define CONFIG_EEPRO100
 #undef CONFIG_PCI_SCAN_SHOW	/* show pci devices on startup */
@@ -380,8 +367,6 @@
 #define CONFIG_HAS_FSL_DR_USB
 #define CONFIG_SYS_SCCR_USBDRCM		3
 
-#define CONFIG_CMD_USB
-#define CONFIG_USB_STORAGE
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_FSL
 #define CONFIG_USB_PHY_TYPE	"utmi"
@@ -434,7 +419,6 @@
 #define CONFIG_LBA48
 #define CONFIG_CMD_SATA
 #define CONFIG_DOS_PARTITION
-#define CONFIG_CMD_EXT2
 #endif
 
 /*
@@ -467,18 +451,8 @@
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_MII
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_PCI
-
-#if defined(CONFIG_SYS_RAMBOOT)
-    #undef CONFIG_CMD_SAVEENV
-    #undef CONFIG_CMD_LOADS
-#endif
 
 #define CONFIG_CMDLINE_EDITING	1	/* add command line history */
 #define CONFIG_AUTO_COMPLETE		/* add autocompletion support */
@@ -509,6 +483,7 @@
  * the maximum mapped by the Linux kernel during initialization.
  */
 #define CONFIG_SYS_BOOTMAPSZ	(256 << 20) /* Initial Memory map for Linux */
+#define CONFIG_SYS_BOOTM_LEN	(64 << 20)	/* Increase max gunzip size */
 
 /*
  * Core HID Setup
@@ -622,7 +597,6 @@
 
 #define CONFIG_LOADADDR 800000	/* default location for tftp and bootm */
 
-#define CONFIG_BOOTDELAY 6	/* -1 disables auto-boot */
 #undef CONFIG_BOOTARGS		/* the boot command will set bootargs */
 
 #define CONFIG_EXTRA_ENV_SETTINGS					\
@@ -652,7 +626,6 @@
 	"tftp $loadaddr $bootfile;"					\
 	"tftp $fdtaddr $fdtfile;"					\
 	"bootm $loadaddr $ramdiskaddr $fdtaddr"
-
 
 #define CONFIG_BOOTCOMMAND CONFIG_NFSBOOTCOMMAND
 

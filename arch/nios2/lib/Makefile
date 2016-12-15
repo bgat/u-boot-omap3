@@ -6,7 +6,5 @@
 #
 
 obj-y	+= cache.o
-obj-y	+= board.o
 obj-$(CONFIG_CMD_BOOTM) += bootm.o
 obj-y	+= libgcc.o
-obj-y	+= time.o

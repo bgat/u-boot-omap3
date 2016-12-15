@@ -160,7 +160,7 @@ int misc_init_r(void)
 		puts("Unknown board revision\n");
 	}
 
-	dieid_num_r();
+	omap_die_id_display();
 
 	return 0;
 }
@@ -185,6 +185,13 @@ int board_mmc_init(bd_t *bis)
 	omap_mmc_init(0, 0, 0, -1, -1);
 
 	return 0;
+}
+#endif
+
+#if defined(CONFIG_GENERIC_MMC)
+void board_mmc_power_init(void)
+{
+	twl4030_power_mmc_init(0);
 }
 #endif
 

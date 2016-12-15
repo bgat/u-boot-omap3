@@ -77,10 +77,9 @@ struct cpld_data {
 int board_early_init_f(void)
 {
 	ccsr_gpio_t *pgpio = (void *)(CONFIG_SYS_MPC85xx_GPIO_ADDR);
-	struct fsl_ifc *ifc = (void *)CONFIG_SYS_IFC_ADDR;
-
+	struct fsl_ifc ifc = {(void *)CONFIG_SYS_IFC_ADDR, (void *)NULL};
 	/* Clock configuration to access CPLD using IFC(GPCM) */
-	setbits_be32(&ifc->ifc_gcr, 1 << IFC_GCR_TBCTL_TRN_TIME_SHIFT);
+	setbits_be32(&ifc.gregs->ifc_gcr, 1 << IFC_GCR_TBCTL_TRN_TIME_SHIFT);
 	/*
 	* Reset PCIe slots via GPIO4
 	*/
@@ -93,7 +92,7 @@ int board_early_init_f(void)
 int board_early_init_r(void)
 {
 	const unsigned int flashbase = CONFIG_SYS_FLASH_BASE;
-	const u8 flash_esel = find_tlb_idx((void *)flashbase, 1);
+	int flash_esel = find_tlb_idx((void *)flashbase, 1);
 
 	/*
 	 * Remap Boot flash region to caching-inhibited
@@ -104,8 +103,14 @@ int board_early_init_r(void)
 	flush_dcache();
 	invalidate_icache();
 
-	/* invalidate existing TLB entry for flash */
-	disable_tlb(flash_esel);
+	if (flash_esel == -1) {
+		/* very unlikely unless something is messed up */
+		puts("Error: Could not find TLB for FLASH BASE\n");
+		flash_esel = 2;	/* give our best effort to continue */
+	} else {
+		/* invalidate existing TLB entry for flash */
+		disable_tlb(flash_esel);
+	}
 
 	set_tlb(1, flashbase, CONFIG_SYS_FLASH_BASE_PHYS,
 			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
@@ -321,9 +326,9 @@ int checkboard(void)
 	return 0;
 }
 
-#ifdef CONFIG_TSEC_ENET
 int board_eth_init(bd_t *bis)
 {
+#ifdef CONFIG_TSEC_ENET
 	struct fsl_pq_mdio_info mdio_info;
 	struct tsec_info_struct tsec_info[4];
 	struct cpu_type *cpu;
@@ -357,10 +362,10 @@ int board_eth_init(bd_t *bis)
 	fsl_pq_mdio_init(bis, &mdio_info);
 
 	tsec_eth_init(bis, tsec_info, num);
+#endif
 
 	return pci_eth_init(bis);
 }
-#endif
 
 #if defined(CONFIG_OF_BOARD_SETUP)
 void fdt_del_flexcan(void *blob)
@@ -438,7 +443,7 @@ void fdt_disable_uart1(void *blob)
 	}
 }
 
-void ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, bd_t *bd)
 {
 	phys_addr_t base;
 	phys_size_t size;
@@ -458,7 +463,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 	fdt_fixup_memory(blob, (u64)base, (u64)size);
 
 #if defined(CONFIG_HAS_FSL_DR_USB)
-	fdt_fixup_dr_usb(blob, bd);
+	fsl_fdt_fixup_dr_usb(blob, bd);
 #endif
 
        /* P1014 and it's derivatives don't support CAN and eTSEC3 */
@@ -490,6 +495,8 @@ void ft_board_setup(void *blob, bd_t *bd)
 		fdt_del_flexcan(blob);
 		fdt_disable_uart1(blob);
 	}
+
+	return 0;
 }
 #endif
 

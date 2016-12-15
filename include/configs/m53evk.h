@@ -9,48 +9,28 @@
 #define __M53EVK_CONFIG_H__
 
 #define CONFIG_MX53
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_MXC_GPIO
 
 #include <asm/arch/imx-regs.h>
 
-#define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_REVISION_TAG
 #define CONFIG_SYS_NO_FLASH
-
-#define CONFIG_FIT
+#define CONFIG_SYS_FSL_CLK
 
 #define CONFIG_TIMESTAMP		/* Print image info with timestamp */
 
 /*
  * U-Boot Commands
  */
-#include <config_cmd_default.h>
-#define CONFIG_DISPLAY_BOARDINFO
 #define CONFIG_DOS_PARTITION
 #define CONFIG_FAT_WRITE
 
-#define CONFIG_CMD_ASKENV
 #define CONFIG_CMD_BMP
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_EXT4
-#define CONFIG_CMD_EXT4_WRITE
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_GREPENV
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_MII
-#define CONFIG_CMD_MMC
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_NET
-#define CONFIG_CMD_PING
+#define CONFIG_CMD_NAND_TRIMFFS
 #define CONFIG_CMD_SATA
-#define CONFIG_CMD_SETEXPR
-#define CONFIG_CMD_USB
-#define CONFIG_VIDEO
-
-#define CONFIG_REGEX			/* Enable regular expression support */
 
 /*
  * Memory configurations
@@ -87,10 +67,8 @@
 #define CONFIG_SYS_MAXARGS	32		/* Max number of command args */
 #define CONFIG_SYS_BARGSIZE	CONFIG_SYS_CBSIZE
 						/* Boot argument buffer size */
-#define CONFIG_VERSION_VARIABLE			/* U-BOOT version */
 #define CONFIG_AUTO_COMPLETE			/* Command auto complete */
 #define CONFIG_CMDLINE_EDITING			/* Command history etc */
-#define CONFIG_SYS_HUSH_PARSER
 
 /*
  * Serial Driver
@@ -134,7 +112,6 @@
 #define CONFIG_ENV_OFFSET_REDUND	\
 		(CONFIG_ENV_OFFSET + CONFIG_ENV_RANGE)
 
-#define CONFIG_CMD_UBI
 #define CONFIG_CMD_UBIFS
 #define CONFIG_CMD_MTDPARTS
 #define CONFIG_RBTREE
@@ -175,7 +152,10 @@
 #ifdef CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
-#define CONFIG_SYS_SPD_BUS_NUM		1 /* I2C2 */
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
+#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+#define CONFIG_SYS_RTC_BUS_NUM		1 /* I2C2 */
 #endif
 
 /*
@@ -193,7 +173,6 @@
 #ifdef CONFIG_CMD_USB
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_MX5
-#define CONFIG_USB_STORAGE
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_USB_ETHER_MCS7830
@@ -220,9 +199,6 @@
  */
 #ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_IPUV3
-#define CONFIG_CFB_CONSOLE
-#define CONFIG_VGA_AS_SINGLE_DEVICE
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SPLASH_SCREEN
@@ -241,29 +217,21 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
-#define CONFIG_BOOTDELAY	3
 #define CONFIG_BOOTFILE		"fitImage"
 #define CONFIG_BOOTARGS		"console=ttymxc1,115200"
 #define CONFIG_LOADADDR		0x70800000
 #define CONFIG_BOOTCOMMAND	"run mmc_mmc"
 #define CONFIG_SYS_LOAD_ADDR	CONFIG_LOADADDR
-#define CONFIG_OF_LIBFDT
 
 /*
  * NAND SPL
  */
-#define CONFIG_SPL
 #define CONFIG_SPL_FRAMEWORK
 #define CONFIG_SPL_TARGET		"u-boot-with-nand-spl.imx"
 #define CONFIG_SPL_BOARD_INIT
 #define CONFIG_SPL_TEXT_BASE		0x70008000
 #define CONFIG_SPL_PAD_TO		0x8000
 #define CONFIG_SPL_STACK		0x70004000
-#define CONFIG_SPL_GPIO_SUPPORT
-#define CONFIG_SPL_LIBCOMMON_SUPPORT
-#define CONFIG_SPL_LIBGENERIC_SUPPORT
-#define CONFIG_SPL_NAND_SUPPORT
-#define CONFIG_SPL_SERIAL_SUPPORT
 
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	CONFIG_SPL_PAD_TO
 #define CONFIG_SYS_NAND_PAGE_SIZE	2048
@@ -306,7 +274,7 @@
 	"addargs=run addcons addmtd addmisc\0"				\
 	"mmcload="							\
 		"mmc rescan ; "						\
-		"ext4load mmc 0:1 ${kernel_addr_r} ${bootfile}\0"	\
+		"load mmc 0:1 ${kernel_addr_r} ${bootfile}\0"		\
 	"ubiload="							\
 		"ubi part UBI ; ubifsmount ubi0:rootfs ; "		\
 		"ubifsload ${kernel_addr_r} /boot/${bootfile}\0"	\
@@ -349,10 +317,12 @@
 		"bootm ${kernel_addr_r}\0"				\
 	"try_bootscript="						\
 		"mmc rescan;"						\
-		"if ext4load mmc 0:1 ${kernel_addr_r} ${bootscript};"	\
-		"then;"							\
-			"\techo Running bootscript...;"			\
-			"\tsource ${kernel_addr_r};"			\
+		"if test -e mmc 0:1 ${bootscript} ; then "		\
+		"if load mmc 0:1 ${kernel_addr_r} ${bootscript};"	\
+		"then ; "						\
+			"echo Running bootscript... ; "			\
+			"source ${kernel_addr_r} ; "			\
+		"fi ; "							\
 		"fi\0"
 
 #endif	/* __M53EVK_CONFIG_H__ */

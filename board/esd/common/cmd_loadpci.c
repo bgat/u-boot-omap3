@@ -7,14 +7,12 @@
 
 #include <common.h>
 #include <command.h>
+#include <console.h>
 #if !defined(CONFIG_440)
 #include <asm/4xx_pci.h>
 #endif
 
 #if defined(CONFIG_CMD_BSP)
-
-extern int do_source (cmd_tbl_t *, int, int, char *[]);
-
 #define ADDRMASK 0xfffff000
 
 /*
@@ -27,7 +25,6 @@ int do_loadpci(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	int count2 = 0;
 	char addr[16];
 	char str[] = "\\|/-";
-	char *local_args[2];
 	u32 la, ptm1la;
 
 #if defined(CONFIG_440)
@@ -84,9 +81,7 @@ int do_loadpci(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			 * Boot image via "source" command
 			 */
 			printf("executing script at addr 0x%s ...\n", addr);
-			local_args[0] = addr;
-			local_args[1] = NULL;
-			do_source(cmdtp, 0, 1, local_args);
+			source(la, NULL);
 			break;
 
 		case 2:

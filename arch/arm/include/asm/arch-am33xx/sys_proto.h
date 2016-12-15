@@ -11,10 +11,7 @@
 #ifndef _SYS_PROTO_H_
 #define _SYS_PROTO_H_
 #include <linux/mtd/omap_gpmc.h>
-#include <asm/ti-common/sys_proto.h>
 #include <asm/arch/cpu.h>
-
-#define BOARD_REV_ID	0x0
 
 u32 get_cpu_rev(void);
 u32 get_sysboot_value(void);
@@ -28,9 +25,8 @@ void ddr_pll_config(unsigned int ddrpll_M);
 
 void sdelay(unsigned long);
 
-struct gpmc_cs;
 void gpmc_init(void);
-void enable_gpmc_cs_config(const u32 *gpmc_config, struct gpmc_cs *cs, u32 base,
+void enable_gpmc_cs_config(const u32 *gpmc_config, const struct gpmc_cs *cs, u32 base,
 			u32 size);
 void omap_nand_switch_ecc(uint32_t, uint32_t);
 
@@ -45,3 +41,6 @@ void am33xx_spl_board_init(void);
 int am335x_get_efuse_mpu_max_freq(struct ctrl_dev *cdev);
 int am335x_get_tps65910_mpu_vdd(int sil_rev, int frequency);
 #endif
+
+void enable_usb_clocks(int index);
+void disable_usb_clocks(int index);

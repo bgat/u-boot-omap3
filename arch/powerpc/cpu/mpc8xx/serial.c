@@ -268,11 +268,6 @@ smc_putc(const char c)
 	volatile cpm8xx_t	*cpmp = &(im->im_cpm);
 	volatile serialbuffer_t	*rtx;
 
-#ifdef CONFIG_MODEM_SUPPORT
-	if (gd->be_quiet)
-		return;
-#endif
-
 	if (c == '\n')
 		smc_putc ('\r');
 
@@ -405,22 +400,6 @@ static int scc_init (void)
 	sp = (scc_t *) &(cp->cp_scc[SCC_INDEX]);
 	up = (scc_uart_t *) &cp->cp_dparam[PROFF_SCC];
 
-#if defined(CONFIG_LWMON) && defined(CONFIG_8xx_CONS_SCC2)
-    {	/* Disable Ethernet, enable Serial */
-	uchar c;
-
-	c = pic_read  (0x61);
-	c &= ~0x40;	/* enable COM3 */
-	c |=  0x80;	/* disable Ethernet */
-	pic_write (0x61, c);
-
-	/* enable RTS2 */
-	cp->cp_pbpar |=  0x2000;
-	cp->cp_pbdat |=  0x2000;
-	cp->cp_pbdir |=  0x2000;
-    }
-#endif	/* CONFIG_LWMON */
-
 	/* Disable transmitter/receiver. */
 	sp->scc_gsmrl &= ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
 
@@ -432,18 +411,13 @@ static int scc_init (void)
 	cp->cp_pbdir &= ~0x06;
 	cp->cp_pbodr &= ~0x06;
 
-#elif (SCC_INDEX < 2) || !defined(CONFIG_IP860)
+#elif (SCC_INDEX < 2)
 	/*
 	 * Standard configuration for SCC's is on Part A
 	 */
 	ip->iop_papar |=  ((3 << (2 * SCC_INDEX)));
 	ip->iop_padir &= ~((3 << (2 * SCC_INDEX)));
 	ip->iop_paodr &= ~((3 << (2 * SCC_INDEX)));
-#else
-	/*
-	 * The IP860 has SCC3 and SCC4 on Port D
-	 */
-	ip->iop_pdpar |=  ((3 << (2 * SCC_INDEX)));
 #endif
 
 	/* Allocate space for two buffer descriptors in the DP ram. */
@@ -547,11 +521,6 @@ scc_putc(const char c)
 	volatile scc_uart_t	*up;
 	volatile immap_t	*im = (immap_t *)CONFIG_SYS_IMMR;
 	volatile cpm8xx_t	*cpmp = &(im->im_cpm);
-
-#ifdef CONFIG_MODEM_SUPPORT
-	if (gd->be_quiet)
-		return;
-#endif
 
 	if (c == '\n')
 		scc_putc ('\r');
@@ -657,18 +626,6 @@ void mpc8xx_serial_initialize(void)
 	serial_register(&serial_scc_device);
 #endif
 }
-
-#ifdef CONFIG_MODEM_SUPPORT
-void disable_putc(void)
-{
-	gd->be_quiet = 1;
-}
-
-void enable_putc(void)
-{
-	gd->be_quiet = 0;
-}
-#endif
 
 #if defined(CONFIG_CMD_KGDB)
 

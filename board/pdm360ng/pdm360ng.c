@@ -429,7 +429,7 @@ int checkboard (void)
 	return 0;
 }
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+#ifdef CONFIG_OF_BOARD_SETUP
 #ifdef CONFIG_FDT_FIXUP_PARTITIONS
 struct node_info nodes[] = {
 	{ "fsl,mpc5121-nfc",	MTD_DEV_TYPE_NAND, },
@@ -477,7 +477,7 @@ static unsigned char edid_buf[128] = {
 };
 #endif
 
-void ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, bd_t *bd)
 {
 	u32 val[8];
 	int rc, i = 0;
@@ -526,8 +526,10 @@ void ft_board_setup(void *blob, bd_t *bd)
 	if (rc)
 		printf("Unable to update flash reg property, err=%s\n",
 		       fdt_strerror(rc));
+
+	return 0;
 }
-#endif /* defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP) */
+#endif /* CONFIG_OF_BOARD_SETUP */
 
 /*
  * If argument is NULL, set the LCD brightness to the

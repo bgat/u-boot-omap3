@@ -8,10 +8,9 @@
 #ifndef _CONFIG_KMP204X_H
 #define _CONFIG_KMP204X_H
 
-#define CONFIG_PHYS_64BIT
 #define CONFIG_PPC_P2041
 
-#define CONFIG_SYS_TEXT_BASE	0xfff80000
+#define CONFIG_SYS_TEXT_BASE	0xfff40000
 
 #define CONFIG_KM_DEF_NETDEV	"netdev=eth0\0"
 
@@ -42,9 +41,8 @@
 #define CONFIG_SYS_FSL_CPC		/* Corenet Platform Cache */
 #define CONFIG_SYS_NUM_CPC		CONFIG_NUM_DDR_CONTROLLERS
 #define CONFIG_FSL_ELBC			/* Has Enhanced localbus controller */
-#define CONFIG_PCI			/* Enable PCI/PCIE */
-#define CONFIG_PCIE1			/* PCIE controler 1 */
-#define CONFIG_PCIE3			/* PCIE controler 3 */
+#define CONFIG_PCIE1			/* PCIE controller 1 */
+#define CONFIG_PCIE3			/* PCIE controller 3 */
 #define CONFIG_FSL_PCI_INIT		/* Use common FSL init code */
 #define CONFIG_SYS_PCI_64BIT		/* enable 64-bit PCI resources */
 
@@ -164,7 +162,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 
 #define CONFIG_SYS_NAND_BASE_LIST     {CONFIG_SYS_NAND_BASE}
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
-#define CONFIG_MTD_NAND_VERIFY_WRITE
 #define CONFIG_CMD_NAND
 #define CONFIG_SYS_NAND_BLOCK_SIZE    (128 * 1024)
 
@@ -235,7 +232,7 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_SYS_INIT_SP_OFFSET	CONFIG_SYS_GBL_DATA_OFFSET
 
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE
-#define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
+#define CONFIG_SYS_MONITOR_LEN		(768 * 1024)
 #define CONFIG_SYS_MALLOC_LEN		(1024 * 1024)
 
 /* Serial Port - controlled on board with jumper J8
@@ -243,7 +240,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
  * shorted - index 1
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		(get_bus_freq(0)/2)
@@ -254,18 +250,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_SYS_NS16550_COM4	(CONFIG_SYS_CCSRBAR+0x11D600)
 
 #define CONFIG_KM_CONSOLE_TTY	"ttyS0"
-
-/* Use the HUSH parser */
-#define CONFIG_SYS_HUSH_PARSER
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
 
 /* I2C */
 
@@ -296,12 +280,7 @@ int get_scl(void);
 /*
  * eSPI - Enhanced SPI
  */
-#define CONFIG_FSL_ESPI
-#define CONFIG_SPI_FLASH
 #define CONFIG_SPI_FLASH_BAR	/* 4 byte-addressing */
-#define CONFIG_SPI_FLASH_STMICRO
-#define CONFIG_SPI_FLASH_SPANSION
-#define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED         20000000
 #define CONFIG_SF_DEFAULT_MODE          0
 
@@ -336,10 +315,26 @@ int get_scl(void);
 #define CONFIG_SYS_BMAN_MEM_BASE	0xf4000000
 #define CONFIG_SYS_BMAN_MEM_PHYS	0xff4000000ull
 #define CONFIG_SYS_BMAN_MEM_SIZE	0x00200000
+#define CONFIG_SYS_BMAN_SP_CENA_SIZE    0x4000
+#define CONFIG_SYS_BMAN_SP_CINH_SIZE    0x1000
+#define CONFIG_SYS_BMAN_CENA_BASE       CONFIG_SYS_BMAN_MEM_BASE
+#define CONFIG_SYS_BMAN_CENA_SIZE       (CONFIG_SYS_BMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_BMAN_CINH_BASE       (CONFIG_SYS_BMAN_MEM_BASE + \
+					CONFIG_SYS_BMAN_CENA_SIZE)
+#define CONFIG_SYS_BMAN_CINH_SIZE       (CONFIG_SYS_BMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_BMAN_SWP_ISDR_REG	0xE08
 #define CONFIG_SYS_QMAN_NUM_PORTALS	10
 #define CONFIG_SYS_QMAN_MEM_BASE	0xf4200000
 #define CONFIG_SYS_QMAN_MEM_PHYS	0xff4200000ull
 #define CONFIG_SYS_QMAN_MEM_SIZE	0x00200000
+#define CONFIG_SYS_QMAN_SP_CENA_SIZE    0x4000
+#define CONFIG_SYS_QMAN_SP_CINH_SIZE    0x1000
+#define CONFIG_SYS_QMAN_CENA_BASE       CONFIG_SYS_QMAN_MEM_BASE
+#define CONFIG_SYS_QMAN_CENA_SIZE       (CONFIG_SYS_QMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_QMAN_CINH_BASE       (CONFIG_SYS_QMAN_MEM_BASE + \
+					CONFIG_SYS_QMAN_CENA_SIZE)
+#define CONFIG_SYS_QMAN_CINH_SIZE       (CONFIG_SYS_QMAN_MEM_SIZE >> 1)
+#define CONFIG_SYS_QMAN_SWP_ISDR_REG	0xE08
 
 #define CONFIG_SYS_DPAA_FMAN
 #define CONFIG_SYS_DPAA_PME
@@ -357,8 +352,6 @@ int get_scl(void);
 #define CONFIG_PHY_MARVELL		/* there is a marvell phy */
 
 #define CONFIG_PCI_INDIRECT_BRIDGE
-#define CONFIG_PCI_PNP			/* do pci plug-and-play */
-#define CONFIG_E1000
 
 #define CONFIG_PCI_SCAN_SHOW		/* show pci devices on startup */
 #define CONFIG_DOS_PARTITION
@@ -377,16 +370,21 @@ int get_scl(void);
 #define CONFIG_SYS_LOADS_BAUD_CHANGE	/* allow baudrate change */
 
 /*
+ * Hardware Watchdog
+ */
+#define CONFIG_WATCHDOG			/* enable CPU watchdog */
+#define CONFIG_WATCHDOG_PRESC 34	/* wdog prescaler 2^(64-34) (~10min) */
+#define CONFIG_WATCHDOG_RC WRC_CHIP	/* reset chip on watchdog event */
+
+
+/*
  * additionnal command line configuration.
  */
 #define CONFIG_CMD_PCI
-#define CONFIG_CMD_NET
 #define CONFIG_CMD_ERRATA
 
 /* we don't need flash support */
 #define CONFIG_SYS_NO_FLASH
-#undef CONFIG_CMD_IMLS
-#undef CONFIG_CMD_FLASH
 #undef CONFIG_FLASH_CFI_MTD
 #undef CONFIG_JFFS2_CMDLINE
 
@@ -403,6 +401,7 @@ int get_scl(void);
 #endif
 
 #define __USB_PHY_TYPE	utmi
+#define CONFIG_USB_EHCI_FSL
 
 /*
  * Environment Configuration
@@ -437,6 +436,7 @@ int get_scl(void);
 		"sf probe 0;sf erase 0 +${filesize};"			\
 		"sf write ${load_addr_r} 0 ${filesize};\0"		\
 	"set_fdthigh=true\0"						\
+	"checkfdt=true\0"						\
 	""
 
 #define CONFIG_HW_ENV_SETTINGS						\

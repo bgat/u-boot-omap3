@@ -10,12 +10,7 @@
 #ifndef __CONFIG_UNIVERSAL_H
 #define __CONFIG_UNIVERSAL_H
 
-#include <configs/exynos4-dt.h>
-
-#define CONFIG_SYS_PROMPT	"Universal # "	/* Monitor Command Prompt */
-
-#undef CONFIG_DEFAULT_DEVICE_TREE
-#define CONFIG_DEFAULT_DEVICE_TREE	exynos4210-universal_c210
+#include <configs/exynos4-common.h>
 
 #define CONFIG_TIZEN			/* TIZEN lib */
 
@@ -29,16 +24,11 @@
 
 #define SDRAM_BANK_SIZE			(256 << 20)	/* 256 MB */
 
-/* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (80 * SZ_1M))
-
 /* select serial console configuration */
 #define CONFIG_SERIAL2
 #define CONFIG_BAUDRATE			115200
 
 /* Console configuration */
-#define CONFIG_SYS_CONSOLE_INFO_QUIET
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 
 #define CONFIG_BOOTARGS			"Please use defined boot"
 #define CONFIG_BOOTCOMMAND		"run mmcboot"
@@ -170,8 +160,6 @@
 #define CONFIG_SOFT_I2C_GPIO_SCL EXYNOS4_GPIO_B7
 #define CONFIG_SOFT_I2C_GPIO_SDA EXYNOS4_GPIO_B6
 
-#define CONFIG_CMD_I2C
-
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_SOFT		/* I2C bit-banged */
 #define CONFIG_SYS_I2C_SOFT_SPEED	50000
@@ -184,25 +172,13 @@
 #define CONFIG_POWER_I2C
 #define CONFIG_POWER_MAX8998
 
-#define CONFIG_USB_GADGET
-#define CONFIG_USB_GADGET_S3C_UDC_OTG
-#define CONFIG_USB_GADGET_DUALSPEED
+#define CONFIG_USB_GADGET_DWC2_OTG_PHY
 
 /*
  * SPI Settings
  */
 #define CONFIG_SOFT_SPI
-#define CONFIG_SOFT_SPI_MODE SPI_MODE_3
-#define CONFIG_SOFT_SPI_GPIO_SCLK EXYNOS4_GPIO_Y31
-#define CONFIG_SOFT_SPI_GPIO_MOSI EXYNOS4_GPIO_Y33
-#define CONFIG_SOFT_SPI_GPIO_MISO EXYNOS4_GPIO_Y30
-#define CONFIG_SOFT_SPI_GPIO_CS EXYNOS4_GPIO_Y43
 
-#define SPI_DELAY udelay(1)
-#undef SPI_INIT
-#define SPI_SCL(bit) universal_spi_scl(bit)
-#define SPI_SDA(bit) universal_spi_sda(bit)
-#define SPI_READ universal_spi_read()
 #ifndef	__ASSEMBLY__
 void universal_spi_scl(int bit);
 void universal_spi_sda(int bit);
@@ -239,15 +215,9 @@ int universal_spi_read(void);
 /*
  * LCD Settings
  */
-#define CONFIG_EXYNOS_FB
-#define CONFIG_LCD
-#define CONFIG_CMD_BMP
 #define CONFIG_BMP_16BPP
 #define CONFIG_LD9040
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE ((500 * 160 * 4) + 54)
-
-#define LCD_XRES	480
-#define LCD_YRES	800
 
 #endif	/* __CONFIG_H */

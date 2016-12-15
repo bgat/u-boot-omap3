@@ -137,105 +137,10 @@ const struct emif_regs emif_regs_ddr3_532_mhz_1cs_es2 = {
 	.emif_rd_wr_exec_thresh         = 0x40000305
 };
 
-const struct emif_regs emif_1_regs_ddr3_532_mhz_1cs_dra_es1 = {
-	.sdram_config_init              = 0x61851ab2,
-	.sdram_config                   = 0x61851ab2,
-	.sdram_config2			= 0x08000000,
-	.ref_ctrl                       = 0x00001035,
-	.sdram_tim1                     = 0xCCCF36B3,
-	.sdram_tim2                     = 0x308F7FDA,
-	.sdram_tim3                     = 0x027F88A8,
-	.read_idle_ctrl                 = 0x00050000,
-	.zq_config                      = 0x0007190B,
-	.temp_alert_config              = 0x00000000,
-	.emif_ddr_phy_ctlr_1_init       = 0x0024400A,
-	.emif_ddr_phy_ctlr_1            = 0x0024400A,
-	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
-	.emif_ddr_ext_phy_ctrl_2        = 0x00B000B0,
-	.emif_ddr_ext_phy_ctrl_3        = 0x00B000B0,
-	.emif_ddr_ext_phy_ctrl_4        = 0x00B000B0,
-	.emif_ddr_ext_phy_ctrl_5        = 0x00B000B0,
-	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
-	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
-	.emif_rd_wr_lvl_ctl             = 0x00000000,
-	.emif_rd_wr_exec_thresh         = 0x00000305
-};
-
-const struct emif_regs emif_2_regs_ddr3_532_mhz_1cs_dra_es1 = {
-	.sdram_config_init              = 0x61851B32,
-	.sdram_config                   = 0x61851B32,
-	.sdram_config2			= 0x08000000,
-	.ref_ctrl                       = 0x00001035,
-	.sdram_tim1                     = 0xCCCF36B3,
-	.sdram_tim2                     = 0x308F7FDA,
-	.sdram_tim3                     = 0x027F88A8,
-	.read_idle_ctrl                 = 0x00050000,
-	.zq_config                      = 0x0007190B,
-	.temp_alert_config              = 0x00000000,
-	.emif_ddr_phy_ctlr_1_init       = 0x0024400A,
-	.emif_ddr_phy_ctlr_1            = 0x0024400A,
-	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
-	.emif_ddr_ext_phy_ctrl_2        = 0x00B000B0,
-	.emif_ddr_ext_phy_ctrl_3        = 0x00B000B0,
-	.emif_ddr_ext_phy_ctrl_4        = 0x00B000B0,
-	.emif_ddr_ext_phy_ctrl_5        = 0x00B000B0,
-	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
-	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
-	.emif_rd_wr_lvl_ctl             = 0x00000000,
-	.emif_rd_wr_exec_thresh         = 0x00000305
-};
-
 const struct dmm_lisa_map_regs lisa_map_4G_x_2_x_2 = {
 	.dmm_lisa_map_0 = 0x0,
 	.dmm_lisa_map_1 = 0x0,
 	.dmm_lisa_map_2 = 0x80740300,
-	.dmm_lisa_map_3 = 0xFF020100,
-	.is_ma_present	= 0x1
-};
-
-/*
- * DRA752 EVM board has 1.5 GB of memory
- * EMIF1 --> 2Gb * 2 =  512MB
- * EMIF2 --> 2Gb * 4 =  1GB
- * so mapping 1GB interleaved and 512MB non-interleaved
- */
-const struct dmm_lisa_map_regs lisa_map_2G_x_2_x_2_2G_x_1_x_2 = {
-	.dmm_lisa_map_0 = 0x0,
-	.dmm_lisa_map_1 = 0x80640300,
-	.dmm_lisa_map_2 = 0xC0500220,
-	.dmm_lisa_map_3 = 0xFF020100,
-	.is_ma_present	= 0x1
-};
-
-/*
- * DRA752 EVM EMIF1 ONLY CONFIGURATION
- */
-const struct dmm_lisa_map_regs lisa_map_2G_x_1_x_2 = {
-	.dmm_lisa_map_0 = 0x0,
-	.dmm_lisa_map_1 = 0x0,
-	.dmm_lisa_map_2 = 0x80500100,
-	.dmm_lisa_map_3 = 0xFF020100,
-	.is_ma_present	= 0x1
-};
-
-/*
- * DRA752 EVM EMIF2 ONLY CONFIGURATION
- */
-const struct dmm_lisa_map_regs lisa_map_2G_x_2_x_2 = {
-	.dmm_lisa_map_0 = 0x0,
-	.dmm_lisa_map_1 = 0x0,
-	.dmm_lisa_map_2 = 0x80600200,
-	.dmm_lisa_map_3 = 0xFF020100,
-	.is_ma_present	= 0x1
-};
-
-/*
- * DRA722 EVM EMIF1 CONFIGURATION
- */
-const struct dmm_lisa_map_regs lisa_map_2G_x_2 = {
-	.dmm_lisa_map_0 = 0x0,
-	.dmm_lisa_map_1 = 0x0,
-	.dmm_lisa_map_2 = 0x80600100,
 	.dmm_lisa_map_3 = 0xFF020100,
 	.is_ma_present	= 0x1
 };
@@ -253,22 +158,9 @@ static void emif_get_reg_dump_sdp(u32 emif_nr, const struct emif_regs **regs)
 		*regs = &emif_regs_532_mhz_2cs_es2;
 		break;
 	case OMAP5432_ES2_0:
+	default:
 		*regs = &emif_regs_ddr3_532_mhz_1cs_es2;
 		break;
-	case DRA752_ES1_0:
-	case DRA752_ES1_1:
-		switch (emif_nr) {
-		case 1:
-			*regs = &emif_1_regs_ddr3_532_mhz_1cs_dra_es1;
-			break;
-		case 2:
-			*regs = &emif_2_regs_ddr3_532_mhz_1cs_dra_es1;
-			break;
-		}
-		break;
-	case DRA722_ES1_0:
-	default:
-		*regs = &emif_1_regs_ddr3_532_mhz_1cs_dra_es1;
 	}
 }
 
@@ -283,15 +175,9 @@ static void emif_get_dmm_regs_sdp(const struct dmm_lisa_map_regs
 	case OMAP5430_ES2_0:
 	case OMAP5432_ES1_0:
 	case OMAP5432_ES2_0:
+	default:
 		*dmm_lisa_regs = &lisa_map_4G_x_2_x_2;
 		break;
-	case DRA752_ES1_0:
-	case DRA752_ES1_1:
-		*dmm_lisa_regs = &lisa_map_2G_x_2_x_2_2G_x_1_x_2;
-		break;
-	case DRA722_ES1_0:
-	default:
-		*dmm_lisa_regs = &lisa_map_2G_x_2;
 	}
 
 }
@@ -392,28 +278,39 @@ const u32 ddr3_ext_phy_ctrl_const_base_es2[] = {
 	0x0
 };
 
+/* Ext phy ctrl 1-35 regs */
 const u32
 dra_ddr3_ext_phy_ctrl_const_base_es1_emif1[] = {
-	0x00B000B0,
-	0x00400040,
-	0x00400040,
-	0x00400040,
-	0x00400040,
-	0x00400040,
-	0x00800080,
-	0x00800080,
-	0x00800080,
-	0x00800080,
-	0x00800080,
-	0x00600060,
-	0x00600060,
-	0x00600060,
-	0x00600060,
-	0x00600060,
-	0x00800080,
-	0x00800080,
-	0x40010080,
+	0x10040100,
+	0x00910091,
+	0x00950095,
+	0x009B009B,
+	0x009E009E,
+	0x00980098,
+	0x00340034,
+	0x00350035,
+	0x00340034,
+	0x00310031,
+	0x00340034,
+	0x007F007F,
+	0x007F007F,
+	0x007F007F,
+	0x007F007F,
+	0x007F007F,
+	0x00480048,
+	0x004A004A,
+	0x00520052,
+	0x00550055,
+	0x00500050,
+	0x00000000,
+	0x00600020,
+	0x40011080,
 	0x08102040,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
 	0x0,
 	0x0,
 	0x0,
@@ -421,23 +318,69 @@ dra_ddr3_ext_phy_ctrl_const_base_es1_emif1[] = {
 	0x0
 };
 
+/* Ext phy ctrl 1-35 regs */
 const u32
 dra_ddr3_ext_phy_ctrl_const_base_es1_emif2[] = {
-	0x00BB00BB,
-	0x00440044,
-	0x00440044,
-	0x00440044,
-	0x00440044,
-	0x00440044,
+	0x10040100,
+	0x00910091,
+	0x00950095,
+	0x009B009B,
+	0x009E009E,
+	0x00980098,
+	0x00330033,
+	0x00330033,
+	0x002F002F,
+	0x00320032,
+	0x00310031,
 	0x007F007F,
 	0x007F007F,
 	0x007F007F,
 	0x007F007F,
 	0x007F007F,
-	0x00600060,
-	0x00600060,
-	0x00600060,
-	0x00600060,
+	0x00520052,
+	0x00520052,
+	0x00470047,
+	0x00490049,
+	0x00500050,
+	0x00000000,
+	0x00600020,
+	0x40011080,
+	0x08102040,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0
+};
+
+/* Ext phy ctrl 1-35 regs */
+const u32
+dra_ddr3_ext_phy_ctrl_const_base_666MHz[] = {
+	0x10040100,
+	0x00A400A4,
+	0x00A900A9,
+	0x00B000B0,
+	0x00B000B0,
+	0x00A400A4,
+	0x00390039,
+	0x00320032,
+	0x00320032,
+	0x00320032,
+	0x00440044,
+	0x00550055,
+	0x00550055,
+	0x00550055,
+	0x00550055,
+	0x007F007F,
+	0x004D004D,
+	0x00430043,
+	0x00560056,
+	0x00540054,
 	0x00600060,
 	0x0,
 	0x00600020,
@@ -447,7 +390,51 @@ dra_ddr3_ext_phy_ctrl_const_base_es1_emif2[] = {
 	0x0,
 	0x0,
 	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
 	0x0
+};
+
+const u32 dra_ddr3_ext_phy_ctrl_const_base_666MHz_es2[] = {
+	0x04040100,
+	0x006B009F,
+	0x006B00A2,
+	0x006B00A8,
+	0x006B00A8,
+	0x006B00B2,
+	0x002F002F,
+	0x002F002F,
+	0x002F002F,
+	0x002F002F,
+	0x002F002F,
+	0x00600073,
+	0x00600071,
+	0x0060007C,
+	0x0060007E,
+	0x00600084,
+	0x00400053,
+	0x00400051,
+	0x0040005C,
+	0x0040005E,
+	0x00400064,
+	0x00800080,
+	0x00800080,
+	0x40010080,
+	0x08102040,
+	0x005B008F,
+	0x005B0092,
+	0x005B0098,
+	0x005B0098,
+	0x005B00A2,
+	0x00300043,
+	0x00300041,
+	0x0030004C,
+	0x0030004E,
+	0x00300054,
+	0x00000077
 };
 
 const struct lpddr2_mr_regs mr_regs = {
@@ -458,7 +445,7 @@ const struct lpddr2_mr_regs mr_regs = {
 	.mr16	= MR16_REF_FULL_ARRAY
 };
 
-static void emif_get_ext_phy_ctrl_const_regs(u32 emif_nr,
+void __weak emif_get_ext_phy_ctrl_const_regs(u32 emif_nr,
 					     const u32 **regs,
 					     u32 *size)
 {
@@ -478,7 +465,7 @@ static void emif_get_ext_phy_ctrl_const_regs(u32 emif_nr,
 		break;
 	case DRA752_ES1_0:
 	case DRA752_ES1_1:
-	case DRA722_ES1_0:
+	case DRA752_ES2_0:
 		if (emif_nr == 1) {
 			*regs = dra_ddr3_ext_phy_ctrl_const_base_es1_emif1;
 			*size =
@@ -488,6 +475,14 @@ static void emif_get_ext_phy_ctrl_const_regs(u32 emif_nr,
 			*size =
 			ARRAY_SIZE(dra_ddr3_ext_phy_ctrl_const_base_es1_emif2);
 		}
+		break;
+	case DRA722_ES1_0:
+		*regs = dra_ddr3_ext_phy_ctrl_const_base_666MHz;
+		*size = ARRAY_SIZE(dra_ddr3_ext_phy_ctrl_const_base_666MHz);
+		break;
+	case DRA722_ES2_0:
+		*regs = dra_ddr3_ext_phy_ctrl_const_base_666MHz_es2;
+		*size = ARRAY_SIZE(dra_ddr3_ext_phy_ctrl_const_base_666MHz_es2);
 		break;
 	default:
 		*regs = ddr3_ext_phy_ctrl_const_base_es2;
@@ -501,7 +496,7 @@ void get_lpddr2_mr_regs(const struct lpddr2_mr_regs **regs)
 	*regs = &mr_regs;
 }
 
-void do_ext_phy_settings(u32 base, const struct emif_regs *regs)
+static void do_ext_phy_settings_omap5(u32 base, const struct emif_regs *regs)
 {
 	u32 *ext_phy_ctrl_base = 0;
 	u32 *emif_ext_phy_ctrl_base = 0;
@@ -538,6 +533,76 @@ void do_ext_phy_settings(u32 base, const struct emif_regs *regs)
 		writel(ext_phy_ctrl_const_regs[i],
 		       emif_ext_phy_ctrl_base++);
 	}
+}
+
+static void do_ext_phy_settings_dra7(u32 base, const struct emif_regs *regs)
+{
+	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
+	u32 *emif_ext_phy_ctrl_base = 0;
+	u32 emif_nr;
+	const u32 *ext_phy_ctrl_const_regs;
+	u32 i, hw_leveling, size, phy;
+
+	emif_nr = (base == EMIF1_BASE) ? 1 : 2;
+
+	hw_leveling = regs->emif_rd_wr_lvl_rmp_ctl >> EMIF_REG_RDWRLVL_EN_SHIFT;
+	phy = regs->emif_ddr_phy_ctlr_1_init;
+
+	emif_ext_phy_ctrl_base = (u32 *)&(emif->emif_ddr_ext_phy_ctrl_1);
+
+	emif_get_ext_phy_ctrl_const_regs(emif_nr,
+					 &ext_phy_ctrl_const_regs, &size);
+
+	writel(ext_phy_ctrl_const_regs[0], &emif_ext_phy_ctrl_base[0]);
+	writel(ext_phy_ctrl_const_regs[0], &emif_ext_phy_ctrl_base[1]);
+
+	/*
+	 * Copy the predefined PHY register values
+	 * if leveling is disabled.
+	 */
+	if (phy & EMIF_DDR_PHY_CTRL_1_RDLVLGATE_MASK_MASK)
+		for (i = 1; i < 6; i++) {
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2]);
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2 + 1]);
+		}
+
+	if (phy & EMIF_DDR_PHY_CTRL_1_RDLVL_MASK_MASK)
+		for (i = 6; i < 11; i++) {
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2]);
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2 + 1]);
+		}
+
+	if (phy & EMIF_DDR_PHY_CTRL_1_WRLVL_MASK_MASK)
+		for (i = 11; i < 25; i++) {
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2]);
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2 + 1]);
+		}
+
+	if (hw_leveling) {
+		/*
+		 * Write the init value for HW levling to occur
+		 */
+		for (i = 21; i < 35; i++) {
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2]);
+			writel(ext_phy_ctrl_const_regs[i],
+			       &emif_ext_phy_ctrl_base[i * 2 + 1]);
+		}
+	}
+}
+
+void do_ext_phy_settings(u32 base, const struct emif_regs *regs)
+{
+	if (is_omap54xx())
+		do_ext_phy_settings_omap5(base, regs);
+	else
+		do_ext_phy_settings_dra7(base, regs);
 }
 
 #ifndef CONFIG_SYS_DEFAULT_LPDDR2_TIMINGS
@@ -646,7 +711,9 @@ const struct read_write_regs *get_bug_regs(u32 *iterations)
 		break;
 	case DRA752_ES1_0:
 	case DRA752_ES1_1:
+	case DRA752_ES2_0:
 	case DRA722_ES1_0:
+	case DRA722_ES2_0:
 		bug_00339_regs_ptr = dra_bug_00339_regs;
 		*iterations = sizeof(dra_bug_00339_regs)/
 			     sizeof(dra_bug_00339_regs[0]);

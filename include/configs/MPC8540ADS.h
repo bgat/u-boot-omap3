@@ -12,7 +12,7 @@
  * Please refer to doc/README.mpc85xx for more info.
  *
  * Make sure you change the MAC address and other network params first,
- * search for CONFIG_ETHADDR, CONFIG_SERVERIP, etc in this file.
+ * search for CONFIG_SERVERIP, etc in this file.
  */
 
 #ifndef __CONFIG_H
@@ -34,7 +34,6 @@
 #define CONFIG_HAS_FEC		1	/* 8540 has FEC */
 #endif
 
-#define CONFIG_PCI
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_SYS_PCI_64BIT	1	/* enable 64-bit PCI resources */
 #define CONFIG_TSEC_ENET		/* tsec ethernet support */
@@ -62,7 +61,6 @@
 #ifndef CONFIG_SYS_CLK_FREQ
 #define CONFIG_SYS_CLK_FREQ	33000000
 #endif
-
 
 /*
  * These can be toggled for performance analysis, otherwise use default.
@@ -134,7 +132,6 @@
 
 #undef CONFIG_CLOCKS_IN_MHZ
 
-
 /*
  * Local Bus Definitions
  */
@@ -199,7 +196,6 @@
 #define CONFIG_SYS_LBC_LSDMR_4	(CONFIG_SYS_LBC_LSDMR_COMMON | LSDMR_OP_MRW)
 #define CONFIG_SYS_LBC_LSDMR_5	(CONFIG_SYS_LBC_LSDMR_COMMON | LSDMR_OP_NORMAL)
 
-
 /*
  * 32KB, 8-bit wide for ADS config reg
  */
@@ -219,7 +215,6 @@
 
 /* Serial Port */
 #define CONFIG_CONS_INDEX     1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE    1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -229,16 +224,6 @@
 
 #define CONFIG_SYS_NS16550_COM1        (CONFIG_SYS_CCSRBAR+0x4500)
 #define CONFIG_SYS_NS16550_COM2        (CONFIG_SYS_CCSRBAR+0x4600)
-
-/* Use the HUSH parser */
-#define CONFIG_SYS_HUSH_PARSER
-#ifdef  CONFIG_SYS_HUSH_PARSER
-#endif
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -270,9 +255,6 @@
 #define CONFIG_SYS_PCI1_IO_SIZE	0x100000	/* 1M */
 
 #if defined(CONFIG_PCI)
-
-#define CONFIG_PCI_PNP			/* do pci plug-and-play */
-
 #undef CONFIG_EEPRO100
 #undef CONFIG_TULIP
 
@@ -286,7 +268,6 @@
 #define CONFIG_SYS_PCI_SUBSYS_VENDORID 0x1057  /* Motorola */
 
 #endif	/* CONFIG_PCI */
-
 
 #if defined(CONFIG_TSEC_ENET)
 
@@ -302,7 +283,6 @@
 #define TSEC1_FLAGS		TSEC_GIGABIT
 #define TSEC2_FLAGS		TSEC_GIGABIT
 
-
 #if CONFIG_HAS_FEC
 #define CONFIG_MPC85XX_FEC	1
 #define CONFIG_MPC85XX_FEC_NAME		"FEC"
@@ -315,7 +295,6 @@
 #define CONFIG_ETHPRIME		"TSEC0"
 
 #endif	/* CONFIG_TSEC_ENET */
-
 
 /*
  * Environment
@@ -335,7 +314,6 @@
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download */
 #define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change */
 
-
 /*
  * BOOTP options
  */
@@ -344,27 +322,14 @@
 #define CONFIG_BOOTP_GATEWAY
 #define CONFIG_BOOTP_HOSTNAME
 
-
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_IRQ
-#define CONFIG_CMD_SETEXPR
 
 #if defined(CONFIG_PCI)
     #define CONFIG_CMD_PCI
 #endif
-
-#if defined(CONFIG_SYS_RAMBOOT)
-    #undef CONFIG_CMD_SAVEENV
-    #undef CONFIG_CMD_LOADS
-#endif
-
 
 #undef CONFIG_WATCHDOG			/* watchdog disabled */
 
@@ -398,7 +363,6 @@
 #define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
 #endif
 
-
 /*
  * Environment Configuration
  */
@@ -406,11 +370,8 @@
 /* The mac addresses for all ethernet interface */
 #if defined(CONFIG_TSEC_ENET)
 #define CONFIG_HAS_ETH0
-#define CONFIG_ETHADDR   00:E0:0C:00:00:FD
 #define CONFIG_HAS_ETH1
-#define CONFIG_ETH1ADDR  00:E0:0C:00:01:FD
 #define CONFIG_HAS_ETH2
-#define CONFIG_ETH2ADDR  00:E0:0C:00:02:FD
 #endif
 
 #define CONFIG_IPADDR    192.168.1.253
@@ -425,7 +386,6 @@
 
 #define CONFIG_LOADADDR  200000	/* default location for tftp and bootm */
 
-#define CONFIG_BOOTDELAY 10	/* -1 disables auto-boot */
 #undef  CONFIG_BOOTARGS		/* the boot command will set bootargs */
 
 #define CONFIG_BAUDRATE	115200

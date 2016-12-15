@@ -1,5 +1,5 @@
 /*
- * U-boot - io.h IO routines
+ * U-Boot - io.h IO routines
  *
  * Copyright 2004-2009 Analog Devices Inc.
  *
@@ -11,9 +11,8 @@
 
 #ifdef __KERNEL__
 
+#include <linux/compiler.h>
 #include <asm/blackfin.h>
-
-#define __iomem
 
 static inline void sync(void)
 {

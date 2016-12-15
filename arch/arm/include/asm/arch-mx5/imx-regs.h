@@ -202,11 +202,6 @@
  */
 #define WBED		1
 
-#define CS0_128					0
-#define CS0_64M_CS1_64M				1
-#define CS0_64M_CS1_32M_CS2_32M			2
-#define CS0_32M_CS1_32M_CS2_32M_CS3_32M		3
-
 /*
  * CSPI register definitions
  */
@@ -293,17 +288,6 @@
 #define DP_OP_216	((6 << 4) + ((3 - 1)  << 0))
 #define DP_MFD_216	(4 - 1)
 #define DP_MFN_216	3
-
-#define CHIP_REV_1_0            0x10
-#define CHIP_REV_1_1            0x11
-#define CHIP_REV_2_0            0x20
-#define CHIP_REV_2_5		0x25
-#define CHIP_REV_3_0            0x30
-
-#define BOARD_REV_1_0           0x0
-#define BOARD_REV_2_0           0x1
-
-#define BOARD_VER_OFFSET	0x8
 
 #define IMX_IIM_BASE            (IIM_BASE_ADDR)
 
@@ -414,8 +398,7 @@ struct weim {
 
 #if defined(CONFIG_MX51)
 struct iomuxc {
-	u32	gpr0;
-	u32	gpr1;
+	u32	gpr[2];
 	u32	omux0;
 	u32	omux1;
 	u32	omux2;
@@ -424,9 +407,7 @@ struct iomuxc {
 };
 #elif defined(CONFIG_MX53)
 struct iomuxc {
-	u32	gpr0;
-	u32	gpr1;
-	u32	gpr2;
+	u32	gpr[3];
 	u32	omux0;
 	u32	omux1;
 	u32	omux2;

@@ -22,7 +22,6 @@
 
 #define	CONFIG_SYS_TEXT_BASE	0xfff80000
 
-#define CONFIG_PCI
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_SYS_PCI_64BIT	1	/* enable 64-bit PCI resources */
 #define CONFIG_TSEC_ENET		/* tsec ethernet support */
@@ -130,7 +129,6 @@ extern unsigned long get_clock_freq(void);
 #define CONFIG_FLASH_CFI_DRIVER
 #define CONFIG_SYS_FLASH_CFI
 #define CONFIG_SYS_FLASH_EMPTY_INFO
-
 
 /*
  * SDRAM on the Local Bus
@@ -242,7 +240,6 @@ extern unsigned long get_clock_freq(void);
 
 /* Serial Port */
 #define CONFIG_CONS_INDEX     2
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE    1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -252,16 +249,6 @@ extern unsigned long get_clock_freq(void);
 
 #define CONFIG_SYS_NS16550_COM1        (CONFIG_SYS_CCSRBAR+0x4500)
 #define CONFIG_SYS_NS16550_COM2        (CONFIG_SYS_CCSRBAR+0x4600)
-
-/* Use the HUSH parser */
-#define CONFIG_SYS_HUSH_PARSER
-#ifdef  CONFIG_SYS_HUSH_PARSER
-#endif
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -313,7 +300,6 @@ extern unsigned long get_clock_freq(void);
 #if defined(CONFIG_PCI)
 
 #define CONFIG_MPC85XX_PCI2
-#define CONFIG_PCI_PNP			/* do pci plug-and-play */
 
 #undef CONFIG_EEPRO100
 #undef CONFIG_TULIP
@@ -322,7 +308,6 @@ extern unsigned long get_clock_freq(void);
 #define CONFIG_SYS_PCI_SUBSYS_VENDORID 0x1057  /* Motorola */
 
 #endif	/* CONFIG_PCI */
-
 
 #if defined(CONFIG_TSEC_ENET)
 
@@ -362,24 +347,15 @@ extern unsigned long get_clock_freq(void);
 #define CONFIG_BOOTP_GATEWAY
 #define CONFIG_BOOTP_HOSTNAME
 
-
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_MII
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_IRQ
-#define CONFIG_CMD_SETEXPR
 #define CONFIG_CMD_REGINFO
 
 #if defined(CONFIG_PCI)
     #define CONFIG_CMD_PCI
 #endif
-
 
 #undef CONFIG_WATCHDOG			/* watchdog disabled */
 
@@ -418,11 +394,8 @@ extern unsigned long get_clock_freq(void);
 /* The mac addresses for all ethernet interface */
 #if defined(CONFIG_TSEC_ENET)
 #define CONFIG_HAS_ETH0
-#define CONFIG_ETHADDR   00:E0:0C:00:00:FD
 #define CONFIG_HAS_ETH1
-#define CONFIG_ETH1ADDR  00:E0:0C:00:01:FD
 #define CONFIG_HAS_ETH2
-#define CONFIG_ETH2ADDR  00:E0:0C:00:02:FD
 #endif
 
 #define CONFIG_IPADDR    192.168.1.253
@@ -437,7 +410,6 @@ extern unsigned long get_clock_freq(void);
 
 #define CONFIG_LOADADDR  200000   /*default location for tftp and bootm*/
 
-#define CONFIG_BOOTDELAY 10       /* -1 disables auto-boot */
 #undef  CONFIG_BOOTARGS           /* the boot command will set bootargs*/
 
 #define CONFIG_BAUDRATE	115200

@@ -35,8 +35,10 @@ typedef struct {
     uint8 head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
 } NBUF;
 
-int fec5xxx_miiphy_read(const char *devname, uint8 phyAddr, uint8 regAddr, uint16 *retVal);
-int fec5xxx_miiphy_write(const char *devname, uint8 phyAddr, uint8 regAddr, uint16 data);
+int fec5xxx_miiphy_read(struct mii_dev *bus, int phyAddr, int devad,
+			int regAddr);
+int fec5xxx_miiphy_write(struct mii_dev *bus, int phyAddr, int devad,
+			 int regAddr, u16 data);
 
 static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis);
 
@@ -407,13 +409,8 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis)
 	 */
 	if (fec->xcv_type == SEVENWIRE) {
 		/*  10MBit with 7-wire operation */
-#if defined(CONFIG_TOTAL5200)
-		/* 7-wire and USB2 on Ethernet */
-		*(vu_long *)MPC5XXX_GPS_PORT_CONFIG |= 0x00030000;
-#else	/* !CONFIG_TOTAL5200 */
 		/* 7-wire only */
 		*(vu_long *)MPC5XXX_GPS_PORT_CONFIG |= 0x00020000;
-#endif	/* CONFIG_TOTAL5200 */
 	} else {
 		/* 100MBit with MD operation */
 		*(vu_long *)MPC5XXX_GPS_PORT_CONFIG |= 0x00050000;
@@ -476,11 +473,6 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis)
 		miiphy_write(dev->name, phyAddr, 0x0, 0x8000);
 		udelay(1000);
 
-#if defined(CONFIG_UC101) || defined(CONFIG_MUCMC52)
-		/* Set the LED configuration Register for the UC101
-		   and MUCMC52 Board */
-		miiphy_write(dev->name, phyAddr, 0x14, 0x4122);
-#endif
 		if (fec->xcv_type == MII10) {
 			/*
 			 * Force 10Base-T, FDX operation
@@ -869,7 +861,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 			 */
 			memcpy(buff, frame->head, 14);
 			memcpy(buff + 14, frame->data, frame_length);
-			NetReceive(buff, frame_length);
+			net_process_received_packet(buff, frame_length);
 			len = frame_length;
 		}
 		/*
@@ -923,12 +915,21 @@ int mpc5xxx_fec_initialize(bd_t * bis)
 	dev->send = mpc5xxx_fec_send;
 	dev->recv = mpc5xxx_fec_recv;
 
-	sprintf(dev->name, "FEC");
+	strcpy(dev->name, "FEC");
 	eth_register(dev);
 
 #if defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
-	miiphy_register (dev->name,
-			fec5xxx_miiphy_read, fec5xxx_miiphy_write);
+	int retval;
+	struct mii_dev *mdiodev = mdio_alloc();
+	if (!mdiodev)
+		return -ENOMEM;
+	strncpy(mdiodev->name, dev->name, MDIO_NAME_LEN);
+	mdiodev->read = fec5xxx_miiphy_read;
+	mdiodev->write = fec5xxx_miiphy_write;
+
+	retval = mdio_register(mdiodev);
+	if (retval < 0)
+		return retval;
 #endif
 
 	/*
@@ -951,8 +952,10 @@ int mpc5xxx_fec_initialize(bd_t * bis)
 
 /* MII-interface related functions */
 /********************************************************************/
-int fec5xxx_miiphy_read(const char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal)
+int fec5xxx_miiphy_read(struct mii_dev *bus, int phyAddr, int devad,
+			int regAddr)
 {
+	uint16 retVal = 0;
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */
 	uint32 phy;		/* convenient holder for the PHY */
@@ -987,13 +990,14 @@ int fec5xxx_miiphy_read(const char *devname, uint8 phyAddr, uint8 regAddr, uint1
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = (uint16) eth->mii_data;
+	retVal = (uint16) eth->mii_data;
 
-	return 0;
+	return retVal;
 }
 
 /********************************************************************/
-int fec5xxx_miiphy_write(const char *devname, uint8 phyAddr, uint8 regAddr, uint16 data)
+int fec5xxx_miiphy_write(struct mii_dev *bus, int phyAddr, int devad,
+			 int regAddr, u16 data)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */

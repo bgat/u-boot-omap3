@@ -40,23 +40,15 @@
 /*
  * CPU specifics
  */
-#define CONFIG_SYS_GENERIC_BOARD
-
-/* MXS uses FDT */
-#define CONFIG_OF_LIBFDT
 
 /* Startup hooks */
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_ARCH_MISC_INIT
 
 /* SPL */
-#define CONFIG_SPL
 #define CONFIG_SPL_NO_CPU_SUPPORT_CODE
 #define CONFIG_SPL_START_S_PATH	"arch/arm/cpu/arm926ejs/mxs"
 #define CONFIG_SPL_LDSCRIPT	"arch/arm/cpu/arm926ejs/mxs/u-boot-spl.lds"
-#define CONFIG_SPL_LIBCOMMON_SUPPORT
-#define CONFIG_SPL_LIBGENERIC_SUPPORT
-#define CONFIG_SPL_GPIO_SUPPORT
 
 /* Memory sizes */
 #define CONFIG_SYS_MALLOC_LEN		0x00400000	/* 4 MB for malloc */
@@ -94,20 +86,12 @@
 
 /* U-Boot general configuration */
 #define CONFIG_SYS_LONGHELP
-#ifndef CONFIG_SYS_PROMPT
-#endif
 #define CONFIG_SYS_CBSIZE	1024		/* Console I/O buffer size */
-#define CONFIG_SYS_PBSIZE	\
-	(CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
-						/* Print buffer size */
 #define CONFIG_SYS_MAXARGS	32		/* Max number of command args */
 #define CONFIG_SYS_BARGSIZE	CONFIG_SYS_CBSIZE
 						/* Boot argument buffer size */
-#define CONFIG_VERSION_VARIABLE			/* U-BOOT version */
 #define CONFIG_AUTO_COMPLETE			/* Command auto complete */
 #define CONFIG_CMDLINE_EDITING			/* Command history etc */
-#define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 
 /* Booting Linux */
 #define CONFIG_CMDLINE_TAG
@@ -127,13 +111,11 @@
  * DUART Serial Driver.
  * Conflicts with AUART driver which can be set by board.
  */
-#ifndef CONFIG_MXS_AUART
 #define CONFIG_PL011_SERIAL
 #define CONFIG_PL011_CLOCK		24000000
 #define CONFIG_PL01x_PORTS		{ (void *)MXS_UARTDBG_BASE }
 #define CONFIG_CONS_INDEX		0
-#endif
-/* Default baudrate can be overriden by board! */
+/* Default baudrate can be overridden by board! */
 #ifndef CONFIG_BAUDRATE
 #define CONFIG_BAUDRATE			115200
 #endif
@@ -151,7 +133,8 @@
 
 /* I2C */
 #ifdef CONFIG_CMD_I2C
-#define CONFIG_I2C_MXS
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_I2C_MXS
 #define CONFIG_HARD_I2C
 #ifndef CONFIG_SYS_I2C_SPEED
 #define CONFIG_SYS_I2C_SPEED		400000
@@ -160,11 +143,7 @@
 
 /* LCD */
 #ifdef CONFIG_VIDEO
-#define CONFIG_CFB_CONSOLE
 #define CONFIG_VIDEO_MXS
-#define CONFIG_VIDEO_SW_CURSOR
-#define CONFIG_VGA_AS_SINGLE_DEVICE
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 #endif
 
 /* MMC */

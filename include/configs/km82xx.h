@@ -31,6 +31,8 @@
 
 #define	CONFIG_SYS_TEXT_BASE	0xFE000000
 
+#define CONFIG_MISC_INIT_R
+
 /* include common defines/options for all Keymile boards */
 #include "km/keymile-common.h"
 #include "km/km-powerpc.h"
@@ -204,9 +206,6 @@
 	""
 
 #define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_TEXT_BASE
-#if (CONFIG_SYS_MONITOR_BASE < CONFIG_SYS_FLASH_BASE)
-#define CONFIG_SYS_RAMBOOT
-#endif
 
 #define CONFIG_SYS_MONITOR_LEN		(768 << 10)
 
@@ -428,11 +427,6 @@ int get_scl(void);
 				 ORxG_SCY_5_CLK | ORxG_TRLX)
 
 #define	CONFIG_SYS_RESET_ADDRESS 0xFDFFFFFC	/* "bad" address */
-
-/* pass open firmware flat tree */
-#define CONFIG_FIT		1
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
 
 #define OF_TBCLK		(bd->bi_busfreq / 4)
 #define OF_STDOUT_PATH		"/soc/cpm/serial@11a90"

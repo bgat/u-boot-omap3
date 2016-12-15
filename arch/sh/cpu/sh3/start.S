@@ -10,7 +10,6 @@
 
 #include <asm-offsets.h>
 #include <config.h>
-#include <version.h>
 
 	.text
 	.align	2
@@ -46,8 +45,9 @@ _sh_start:
 	mov.l	._gd_init, r13		/* global data */
 	mov.l	._stack_init, r15	/* stack */
 
-	mov.l	._sh_generic_init, r0
-	jsr	@r0
+	#TODO(sh maintainer): Fix this up to call the correct code
+	#mov.l	._sh_generic_init, r0
+	#jsr	@r0
 	nop
 
 loop:
@@ -62,4 +62,4 @@ loop:
 ._bss_end:		.long	bss_end
 ._gd_init:		.long	(_sh_start - GENERATED_GBL_DATA_SIZE)
 ._stack_init:	.long	(_sh_start - GENERATED_GBL_DATA_SIZE - CONFIG_SYS_MALLOC_LEN - 16)
-._sh_generic_init:	.long	sh_generic_init
+#._sh_generic_init:	.long	sh_generic_init

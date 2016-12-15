@@ -14,6 +14,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/omap_common.h>
+#include <asm/omap_sec_common.h>
 #include <asm/utils.h>
 #include <linux/compiler.h>
 
@@ -37,7 +38,8 @@ void set_lpmode_selfrefresh(u32 base)
 void force_emif_self_refresh()
 {
 	set_lpmode_selfrefresh(EMIF1_BASE);
-	set_lpmode_selfrefresh(EMIF2_BASE);
+	if (!is_dra72x())
+		set_lpmode_selfrefresh(EMIF2_BASE);
 }
 
 inline u32 emif_num(u32 base)
@@ -163,7 +165,11 @@ void emif_update_timings(u32 base, const struct emif_regs *regs)
 {
 	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
 
-	writel(regs->ref_ctrl, &emif->emif_sdram_ref_ctrl_shdw);
+	if (!is_dra7xx())
+		writel(regs->ref_ctrl, &emif->emif_sdram_ref_ctrl_shdw);
+	else
+		writel(regs->ref_ctrl_final, &emif->emif_sdram_ref_ctrl_shdw);
+
 	writel(regs->sdram_tim1, &emif->emif_sdram_tim_1_shdw);
 	writel(regs->sdram_tim2, &emif->emif_sdram_tim_2_shdw);
 	writel(regs->sdram_tim3, &emif->emif_sdram_tim_3_shdw);
@@ -191,6 +197,7 @@ void emif_update_timings(u32 base, const struct emif_regs *regs)
 	}
 }
 
+#ifndef CONFIG_OMAP44XX
 static void omap5_ddr3_leveling(u32 base, const struct emif_regs *regs)
 {
 	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
@@ -242,52 +249,135 @@ static void omap5_ddr3_leveling(u32 base, const struct emif_regs *regs)
 	       __udelay(130);
 }
 
+static void update_hwleveling_output(u32 base, const struct emif_regs *regs)
+{
+	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
+	u32 *emif_ext_phy_ctrl_reg, *emif_phy_status;
+	u32 reg, i, phy;
+
+	emif_phy_status = (u32 *)&emif->emif_ddr_phy_status[7];
+	phy = readl(&emif->emif_ddr_phy_ctrl_1);
+
+	/* Update PHY_REG_RDDQS_RATIO */
+	emif_ext_phy_ctrl_reg = (u32 *)&emif->emif_ddr_ext_phy_ctrl_7;
+	if (!(phy & EMIF_DDR_PHY_CTRL_1_RDLVL_MASK_MASK))
+		for (i = 0; i < PHY_RDDQS_RATIO_REGS; i++) {
+			reg = readl(emif_phy_status++);
+			writel(reg, emif_ext_phy_ctrl_reg++);
+			writel(reg, emif_ext_phy_ctrl_reg++);
+		}
+
+	/* Update PHY_REG_FIFO_WE_SLAVE_RATIO */
+	emif_ext_phy_ctrl_reg = (u32 *)&emif->emif_ddr_ext_phy_ctrl_2;
+	emif_phy_status = (u32 *)&emif->emif_ddr_phy_status[12];
+	if (!(phy & EMIF_DDR_PHY_CTRL_1_RDLVLGATE_MASK_MASK))
+		for (i = 0; i < PHY_FIFO_WE_SLAVE_RATIO_REGS; i++) {
+			reg = readl(emif_phy_status++);
+			writel(reg, emif_ext_phy_ctrl_reg++);
+			writel(reg, emif_ext_phy_ctrl_reg++);
+		}
+
+	/* Update PHY_REG_WR_DQ/DQS_SLAVE_RATIO */
+	emif_ext_phy_ctrl_reg = (u32 *)&emif->emif_ddr_ext_phy_ctrl_12;
+	emif_phy_status = (u32 *)&emif->emif_ddr_phy_status[17];
+	if (!(phy & EMIF_DDR_PHY_CTRL_1_WRLVL_MASK_MASK))
+		for (i = 0; i < PHY_REG_WR_DQ_SLAVE_RATIO_REGS; i++) {
+			reg = readl(emif_phy_status++);
+			writel(reg, emif_ext_phy_ctrl_reg++);
+			writel(reg, emif_ext_phy_ctrl_reg++);
+		}
+
+	/* Disable Leveling */
+	writel(regs->emif_ddr_phy_ctlr_1, &emif->emif_ddr_phy_ctrl_1);
+	writel(regs->emif_ddr_phy_ctlr_1, &emif->emif_ddr_phy_ctrl_1_shdw);
+	writel(0x0, &emif->emif_rd_wr_lvl_rmp_ctl);
+}
+
 static void dra7_ddr3_leveling(u32 base, const struct emif_regs *regs)
 {
 	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
 
-	u32 fifo_reg;
+	/* Clear Error Status */
+	clrsetbits_le32(&emif->emif_ddr_ext_phy_ctrl_36,
+			EMIF_REG_PHY_FIFO_WE_IN_MISALINED_CLR,
+			EMIF_REG_PHY_FIFO_WE_IN_MISALINED_CLR);
 
-	fifo_reg = readl(&emif->emif_ddr_fifo_misaligned_clear_1);
-	writel(fifo_reg | 0x00000100,
-	       &emif->emif_ddr_fifo_misaligned_clear_1);
+	clrsetbits_le32(&emif->emif_ddr_ext_phy_ctrl_36_shdw,
+			EMIF_REG_PHY_FIFO_WE_IN_MISALINED_CLR,
+			EMIF_REG_PHY_FIFO_WE_IN_MISALINED_CLR);
 
-	fifo_reg = readl(&emif->emif_ddr_fifo_misaligned_clear_2);
-	writel(fifo_reg | 0x00000100,
-	       &emif->emif_ddr_fifo_misaligned_clear_2);
+	/* Disable refreshed before leveling */
+	clrsetbits_le32(&emif->emif_sdram_ref_ctrl, EMIF_REG_INITREF_DIS_MASK,
+			EMIF_REG_INITREF_DIS_MASK);
 
-	/* Launch Full leveling */
+	/* Start Full leveling */
 	writel(DDR3_FULL_LVL, &emif->emif_rd_wr_lvl_ctl);
 
-	/* Wait till full leveling is complete */
-	readl(&emif->emif_rd_wr_lvl_ctl);
-	      __udelay(130);
+	__udelay(300);
 
-	/* Read data eye leveling no of samples */
-	config_data_eye_leveling_samples(base);
+	/* Check for leveling timeout */
+	if (readl(&emif->emif_status) & EMIF_REG_LEVELING_TO_MASK) {
+		printf("Leveling timeout on EMIF%d\n", emif_num(base));
+		return;
+	}
 
+	/* Enable refreshes after leveling */
+	clrbits_le32(&emif->emif_sdram_ref_ctrl, EMIF_REG_INITREF_DIS_MASK);
+
+	debug("HW leveling success\n");
 	/*
-	 * Disable leveling. This is because if leveling is kept
-	 * enabled, then PHY triggers a false leveling during
-	 * EMIF-idle scenario which results in wrong delay
-	 * values getting updated. After this the EMIF becomes
-	 * unaccessible. So disable it after the first time
+	 * Update slave ratios in EXT_PHY_CTRLx registers
+	 * as per HW leveling output
 	 */
-	writel(0x0, &emif->emif_rd_wr_lvl_rmp_ctl);
+	update_hwleveling_output(base, regs);
 }
 
-static void ddr3_leveling(u32 base, const struct emif_regs *regs)
-{
-	if (is_omap54xx())
-		omap5_ddr3_leveling(base, regs);
-	else
-		dra7_ddr3_leveling(base, regs);
-}
-
-static void ddr3_init(u32 base, const struct emif_regs *regs)
+static void dra7_ddr3_init(u32 base, const struct emif_regs *regs)
 {
 	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
 
+	if (warm_reset()) {
+		emif_reset_phy(base);
+		writel(0x0, &emif->emif_pwr_mgmt_ctrl);
+	}
+	do_ext_phy_settings(base, regs);
+
+	writel(regs->ref_ctrl | EMIF_REG_INITREF_DIS_MASK,
+	       &emif->emif_sdram_ref_ctrl);
+	/* Update timing registers */
+	writel(regs->sdram_tim1, &emif->emif_sdram_tim_1);
+	writel(regs->sdram_tim2, &emif->emif_sdram_tim_2);
+	writel(regs->sdram_tim3, &emif->emif_sdram_tim_3);
+
+	writel(EMIF_L3_CONFIG_VAL_SYS_10_MPU_5_LL_0, &emif->emif_l3_config);
+	writel(regs->read_idle_ctrl, &emif->emif_read_idlectrl);
+	writel(regs->zq_config, &emif->emif_zq_config);
+	writel(regs->temp_alert_config, &emif->emif_temp_alert_config);
+	writel(regs->emif_rd_wr_lvl_rmp_ctl, &emif->emif_rd_wr_lvl_rmp_ctl);
+	writel(regs->emif_rd_wr_lvl_ctl, &emif->emif_rd_wr_lvl_ctl);
+
+	writel(regs->emif_ddr_phy_ctlr_1_init, &emif->emif_ddr_phy_ctrl_1);
+	writel(regs->emif_rd_wr_exec_thresh, &emif->emif_rd_wr_exec_thresh);
+
+	writel(regs->ref_ctrl, &emif->emif_sdram_ref_ctrl);
+
+	writel(regs->sdram_config2, &emif->emif_lpddr2_nvm_config);
+	writel(regs->sdram_config_init, &emif->emif_sdram_config);
+
+	__udelay(1000);
+
+	writel(regs->ref_ctrl_final, &emif->emif_sdram_ref_ctrl);
+
+	if (regs->emif_rd_wr_lvl_rmp_ctl & EMIF_REG_RDWRLVL_EN_MASK)
+		dra7_ddr3_leveling(base, regs);
+}
+
+static void omap5_ddr3_init(u32 base, const struct emif_regs *regs)
+{
+	struct emif_reg_struct *emif = (struct emif_reg_struct *)base;
+
+	writel(regs->ref_ctrl, &emif->emif_sdram_ref_ctrl);
+	writel(regs->sdram_config_init, &emif->emif_sdram_config);
 	/*
 	 * Set SDRAM_CONFIG and PHY control registers to locked frequency
 	 * and RL =7. As the default values of the Mode Registers are not
@@ -301,28 +391,24 @@ static void ddr3_init(u32 base, const struct emif_regs *regs)
 	writel(regs->sdram_tim2, &emif->emif_sdram_tim_2);
 	writel(regs->sdram_tim3, &emif->emif_sdram_tim_3);
 
-	writel(regs->ref_ctrl, &emif->emif_sdram_ref_ctrl);
 	writel(regs->read_idle_ctrl, &emif->emif_read_idlectrl);
 
-	/*
-	 * The same sequence should work on OMAP5432 as well. But strange that
-	 * it is not working
-	 */
-	if (is_dra7xx()) {
-		do_ext_phy_settings(base, regs);
-		writel(regs->sdram_config2, &emif->emif_lpddr2_nvm_config);
-		writel(regs->sdram_config_init, &emif->emif_sdram_config);
-	} else {
-		writel(regs->sdram_config2, &emif->emif_lpddr2_nvm_config);
-		writel(regs->sdram_config_init, &emif->emif_sdram_config);
-		do_ext_phy_settings(base, regs);
-	}
+	writel(regs->sdram_config2, &emif->emif_lpddr2_nvm_config);
+	writel(regs->sdram_config_init, &emif->emif_sdram_config);
+	do_ext_phy_settings(base, regs);
 
-	/* enable leveling */
 	writel(regs->emif_rd_wr_lvl_rmp_ctl, &emif->emif_rd_wr_lvl_rmp_ctl);
-
-	ddr3_leveling(base, regs);
+	omap5_ddr3_leveling(base, regs);
 }
+
+static void ddr3_init(u32 base, const struct emif_regs *regs)
+{
+	if (is_omap54xx())
+		omap5_ddr3_init(base, regs);
+	else
+		dra7_ddr3_init(base, regs);
+}
+#endif
 
 #ifndef CONFIG_SYS_EMIF_PRECALCULATED_TIMING_REGS
 #define print_timing_reg(reg) debug(#reg" - 0x%08x\n", (reg))
@@ -1096,21 +1182,27 @@ static void do_sdram_init(u32 base)
 #endif /* CONFIG_SYS_EMIF_PRECALCULATED_TIMING_REGS */
 
 	/*
-	 * Initializing the LPDDR2 device can not happen from SDRAM.
+	 * Initializing the DDR device can not happen from SDRAM.
 	 * Changing the timing registers in EMIF can happen(going from one
 	 * OPP to another)
 	 */
-	if (!(in_sdram || warm_reset())) {
-		if (emif_sdram_type() == EMIF_SDRAM_TYPE_LPDDR2)
+	if (!in_sdram && (!warm_reset() || is_dra7xx())) {
+		if (emif_sdram_type(regs->sdram_config) ==
+		    EMIF_SDRAM_TYPE_LPDDR2)
 			lpddr2_init(base, regs);
+#ifndef CONFIG_OMAP44XX
 		else
 			ddr3_init(base, regs);
+#endif
 	}
-	if (warm_reset() && (emif_sdram_type() == EMIF_SDRAM_TYPE_DDR3)) {
+#ifdef CONFIG_OMAP54X
+	if (warm_reset() && (emif_sdram_type(regs->sdram_config) ==
+	    EMIF_SDRAM_TYPE_DDR3) && !is_dra7xx()) {
 		set_lpmode_selfrefresh(base);
 		emif_reset_phy(base);
-		ddr3_leveling(base, regs);
+		omap5_ddr3_leveling(base, regs);
 	}
+#endif
 
 	/* Write to the shadow registers */
 	emif_update_timings(base, regs);
@@ -1245,6 +1337,8 @@ void dmm_init(u32 base)
 			&hw_lisa_map_regs->dmm_lisa_map_1);
 		writel(lisa_map_regs->dmm_lisa_map_0,
 			&hw_lisa_map_regs->dmm_lisa_map_0);
+
+		setbits_le32(MA_PRIORITY, MA_HIMEM_INTERLEAVE_UN_MASK);
 	}
 
 	/*
@@ -1262,13 +1356,14 @@ void dmm_init(u32 base)
 			emif1_enabled = 1;
 			emif2_enabled = 1;
 			break;
-		} else if (valid == 1) {
-			emif1_enabled = 1;
-		} else if (valid == 2) {
-			emif2_enabled = 1;
 		}
-	}
 
+		if (valid == 1)
+			emif1_enabled = 1;
+
+		if (valid == 2)
+			emif2_enabled = 1;
+	}
 }
 
 static void do_bug0039_workaround(u32 base)
@@ -1327,7 +1422,8 @@ static void do_bug0039_workaround(u32 base)
 void sdram_init(void)
 {
 	u32 in_sdram, size_prog, size_detect;
-	u32 sdram_type = emif_sdram_type();
+	struct emif_reg_struct *emif = (struct emif_reg_struct *)EMIF1_BASE;
+	u32 sdram_type = emif_sdram_type(emif->emif_sdram_config);
 
 	debug(">>sdram_init()\n");
 
@@ -1382,8 +1478,22 @@ void sdram_init(void)
 			debug("get_ram_size() successful");
 	}
 
+#if defined(CONFIG_TI_SECURE_DEVICE)
+	/*
+	 * On HS devices, do static EMIF firewall configuration
+	 * but only do it if not already running in SDRAM
+	 */
+	if (!in_sdram)
+		if (0 != secure_emif_reserve())
+			hang();
+
+	/* On HS devices, ensure static EMIF firewall APIs are locked */
+	if (0 != secure_emif_firewall_lock())
+		hang();
+#endif
+
 	if (sdram_type == EMIF_SDRAM_TYPE_DDR3 &&
-	    (!in_sdram && !warm_reset())) {
+	    (!in_sdram && !warm_reset()) && (!is_dra7xx())) {
 		if (emif1_enabled)
 			do_bug0039_workaround(EMIF1_BASE);
 		if (emif2_enabled)

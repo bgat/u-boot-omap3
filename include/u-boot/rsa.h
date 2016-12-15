@@ -27,7 +27,10 @@ struct rsa_public_key {
 	uint32_t n0inv;		/* -1 / modulus[0] mod 2^32 */
 	uint32_t *modulus;	/* modulus as little endian array */
 	uint32_t *rr;		/* R^2 as little endian array */
+	uint64_t exponent;	/* public exponent */
 };
+
+struct image_sign_info;
 
 #if IMAGE_ENABLE_SIGN
 /**

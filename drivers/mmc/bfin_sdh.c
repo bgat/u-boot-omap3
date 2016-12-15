@@ -12,7 +12,7 @@
 #include <mmc.h>
 
 #include <asm/io.h>
-#include <asm/errno.h>
+#include <linux/errno.h>
 #include <asm/byteorder.h>
 #include <asm/blackfin.h>
 #include <asm/clock.h>
@@ -109,9 +109,9 @@ sdh_send_cmd(struct mmc *mmc, struct mmc_cmd *mmc_cmd)
 	}
 
 	if (status & CMD_TIME_OUT)
-		ret = TIMEOUT;
+		ret = -ETIMEDOUT;
 	else if (status & CMD_CRC_FAIL && flags & MMC_RSP_CRC)
-		ret = COMM_ERR;
+		ret = -ECOMM;
 	else
 		ret = 0;
 
@@ -136,11 +136,11 @@ static int sdh_setup_data(struct mmc *mmc, struct mmc_data *data)
 
 	/* Don't support write yet. */
 	if (data->flags & MMC_DATA_WRITE)
-		return UNUSABLE_ERR;
+		return -EOPNOTSUPP;
 #ifndef RSI_BLKSZ
-	data_ctl |= ((ffs(data_size) - 1) << 4);
+	data_ctl |= ((ffs(data->blocksize) - 1) << 4);
 #else
-	bfin_write_SDH_BLK_SIZE(data_size);
+	bfin_write_SDH_BLK_SIZE(data->blocksize);
 #endif
 	data_ctl |= DTX_DIR;
 	bfin_write_SDH_DATA_CTL(data_ctl);
@@ -189,14 +189,15 @@ static int bfin_sdh_request(struct mmc *mmc, struct mmc_cmd *cmd,
 		do {
 			udelay(1);
 			status = bfin_read_SDH_STATUS();
-		} while (!(status & (DAT_BLK_END | DAT_END | DAT_TIME_OUT | DAT_CRC_FAIL | RX_OVERRUN)));
+		} while (!(status & (DAT_END | DAT_TIME_OUT | DAT_CRC_FAIL |
+			 RX_OVERRUN)));
 
 		if (status & DAT_TIME_OUT) {
 			bfin_write_SDH_STATUS_CLR(DAT_TIMEOUT_STAT);
-			ret |= TIMEOUT;
+			ret = -ETIMEDOUT;
 		} else if (status & (DAT_CRC_FAIL | RX_OVERRUN)) {
 			bfin_write_SDH_STATUS_CLR(DAT_CRC_FAIL_STAT | RX_OVERRUN_STAT);
-			ret |= COMM_ERR;
+			ret = -ECOMM;
 		} else
 			bfin_write_SDH_STATUS_CLR(DAT_BLK_END_STAT | DAT_END_STAT);
 

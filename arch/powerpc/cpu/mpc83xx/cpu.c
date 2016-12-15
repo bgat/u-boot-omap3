@@ -20,7 +20,7 @@
 #include <netdev.h>
 #include <fsl_esdhc.h>
 #if defined(CONFIG_BOOTCOUNT_LIMIT) && !defined(CONFIG_MPC831x)
-#include <asm/immap_qe.h>
+#include <linux/immap_qe.h>
 #include <asm/io.h>
 #endif
 
@@ -173,11 +173,7 @@ do_reset (cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 unsigned long get_tbclk(void)
 {
-	ulong tbclk;
-
-	tbclk = (gd->bus_clk + 3L) / 4L;
-
-	return tbclk;
+	return (gd->bus_clk + 3L) / 4L;
 }
 
 

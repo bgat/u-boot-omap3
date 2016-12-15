@@ -8,7 +8,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-
 #define CONFIG_405EP		1	/* this is a PPC405 CPU */
 #define CONFIG_NEO	        1	/*  on a Neo board */
 
@@ -18,7 +17,6 @@
  * Include common defines/options for all AMCC eval boards
  */
 #define CONFIG_HOSTNAME		neo
-#define CONFIG_IDENT_STRING	" neo 0.02"
 #include "amcc-common.h"
 
 #define CONFIG_BOARD_EARLY_INIT_F
@@ -35,8 +33,6 @@
 #define PLLMR1_DEFAULT PLLMR1_266_133_66_33
 
 /* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
 #define CONFIG_FIT_DISABLE_SHA256
 
 #define CONFIG_ENV_IS_IN_FLASH	/* use FLASH for environment vars */
@@ -63,13 +59,9 @@
  * Commands additional to the ones defined in amcc-common.h
  */
 #define CONFIG_CMD_DTT
-#undef CONFIG_CMD_DHCP
 #undef CONFIG_CMD_DIAG
 #undef CONFIG_CMD_EEPROM
-#undef CONFIG_CMD_ELF
-#undef CONFIG_CMD_I2C
 #undef CONFIG_CMD_IRQ
-#undef CONFIG_CMD_NFS
 
 /*
  * SDRAM configuration (please see cpu/ppc/sdram.[ch])
@@ -93,7 +85,6 @@
  * set Linux BASE_BAUD to 403200.
  */
 #define CONFIG_CONS_INDEX	1	/* Use UART0			*/
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_serial_clock()

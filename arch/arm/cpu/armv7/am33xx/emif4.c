@@ -112,17 +112,21 @@ void config_ddr(unsigned int pll, const struct ctrl_ioregs *ioregs,
 
 	/* Set CKE to be controlled by EMIF/DDR PHY */
 	writel(DDR_CKE_CTRL_NORMAL, &ddrctrl->ddrckectrl);
+
 #endif
 #ifdef CONFIG_AM43XX
 	writel(readl(&cm_device->cm_dll_ctrl) & ~0x1, &cm_device->cm_dll_ctrl);
 	while ((readl(&cm_device->cm_dll_ctrl) & CM_DLL_READYST) == 0)
 		;
-	writel(0x80000000, &ddrctrl->ddrioctrl);
 
 	config_io_ctrl(ioregs);
 
 	/* Set CKE to be controlled by EMIF/DDR PHY */
 	writel(DDR_CKE_CTRL_NORMAL, &ddrctrl->ddrckectrl);
+
+	if (emif_sdram_type(regs->sdram_config) == EMIF_SDRAM_TYPE_DDR3)
+		/* Allow EMIF to control DDR_RESET */
+		writel(0x00000000, &ddrctrl->ddrioctrl);
 #endif
 
 	/* Program EMIF instance */

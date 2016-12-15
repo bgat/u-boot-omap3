@@ -19,8 +19,6 @@
 #include <asm/hardware.h>
 
 /* ARM asynchronous clock */
-#define CONFIG_DISPLAY_CPUINFO
-#define CONFIG_DISPLAY_BOARDINFO
 
 #define MASTER_PLL_DIV		6
 #define MASTER_PLL_MUL		65
@@ -164,7 +162,6 @@
 #define	CONFIG_USART_ID			ATMEL_ID_SYS
 
 /* LCD */
-#define CONFIG_LCD			1
 #define LCD_BPP				LCD_COLOR8
 #define CONFIG_LCD_LOGO			1
 #undef LCD_TEST_PATTERN
@@ -173,7 +170,6 @@
 #define CONFIG_SYS_WHITE_ON_BLACK	1
 #define CONFIG_ATMEL_LCD		1
 #define CONFIG_ATMEL_LCD_BGR555		1
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV	1
 
 #define CONFIG_LCD_IN_PSRAM		1
 
@@ -182,7 +178,6 @@
 #define CONFIG_RED_LED		GPIO_PIN_PB(7) /* this is the power led */
 #define CONFIG_GREEN_LED	GPIO_PIN_PB(8) /* this is the user1 led */
 
-#define CONFIG_BOOTDELAY	3
 
 /*
  * BOOTP options
@@ -195,18 +190,7 @@
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-#undef CONFIG_CMD_BDI
-#undef CONFIG_CMD_IMI
-#undef CONFIG_CMD_FPGA
-#undef CONFIG_CMD_LOADS
-#undef CONFIG_CMD_IMLS
-
-#define CONFIG_CMD_CACHE
-#define CONFIG_CMD_PING		1
-#define CONFIG_CMD_DHCP		1
 #define CONFIG_CMD_NAND		1
-#define CONFIG_CMD_USB		1
 
 /* SDRAM */
 #define CONFIG_NR_DRAM_BANKS	1
@@ -216,7 +200,6 @@
 /* DataFlash */
 #define CONFIG_ATMEL_DATAFLASH_SPI
 #define CONFIG_HAS_DATAFLASH			1
-#define CONFIG_SYS_SPI_WRITE_TOUT		(5 * CONFIG_SYS_HZ)
 #define CONFIG_SYS_MAX_DATAFLASH_BANKS		1
 #define CONFIG_SYS_DATAFLASH_LOGIC_ADDR_CS0	0xC0000000	/* CS0 */
 #define AT91_SPI_CLK				15000000
@@ -277,7 +260,6 @@
 #define CONFIG_SYS_USB_OHCI_REGS_BASE		0x00a00000	/* AT91SAM9263_UHP_BASE */
 #define CONFIG_SYS_USB_OHCI_SLOT_NAME		"at91sam9263"
 #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
-#define CONFIG_USB_STORAGE			1
 
 #define CONFIG_SYS_LOAD_ADDR			0x22000000	/* load address */
 
@@ -338,7 +320,6 @@
 
 #define CONFIG_BOOTCOMMAND		"run flashboot"
 #define CONFIG_ROOTPATH			"/ronetix/rootfs"
-#define CONFIG_AUTOBOOT_PROMPT		"autoboot in %d seconds\n", bootdelay
 
 #define CONFIG_CON_ROT			"fbcon=rotate:3 "
 #define CONFIG_BOOTARGS			"root=/dev/mtdblock4 rootfstype=jffs2 "\
@@ -377,7 +358,6 @@
 
 #define CONFIG_BAUDRATE			115200
 
-#define CONFIG_SYS_PROMPT		"u-boot-pm9263> "
 #define CONFIG_SYS_CBSIZE		256
 #define CONFIG_SYS_MAXARGS		16
 #define CONFIG_SYS_PBSIZE		\

@@ -5,13 +5,13 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+
 #include <common.h>
 #include <miiphy.h>
 #include <phy.h>
 #include <fsl_mdio.h>
 #include <asm/io.h>
-#include <asm/errno.h>
-#include <asm/fsl_enet.h>
+#include <linux/errno.h>
 
 void tsec_local_mdio_write(struct tsec_mii_mng __iomem *phyregs, int port_addr,
 		int dev_addr, int regnum, int value)
@@ -20,7 +20,8 @@ void tsec_local_mdio_write(struct tsec_mii_mng __iomem *phyregs, int port_addr,
 
 	out_be32(&phyregs->miimadd, (port_addr << 8) | (regnum & 0x1f));
 	out_be32(&phyregs->miimcon, value);
-	asm("sync");
+	/* Memory barrier */
+	mb();
 
 	while ((in_be32(&phyregs->miimind) & MIIMIND_BUSY) && timeout--)
 		;
@@ -32,17 +33,18 @@ int tsec_local_mdio_read(struct tsec_mii_mng __iomem *phyregs, int port_addr,
 	int value;
 	int timeout = 1000000;
 
-	/* Put the address of the phy, and the register
-	 * number into MIIMADD */
+	/* Put the address of the phy, and the register number into MIIMADD */
 	out_be32(&phyregs->miimadd, (port_addr << 8) | (regnum & 0x1f));
 
 	/* Clear the command register, and wait */
 	out_be32(&phyregs->miimcom, 0);
-	asm("sync");
+	/* Memory barrier */
+	mb();
 
 	/* Initiate a read command, and wait */
 	out_be32(&phyregs->miimcom, MIIMCOM_READ_CYCLE);
-	asm("sync");
+	/* Memory barrier */
+	mb();
 
 	/* Wait for the the indication that the read is done */
 	while ((in_be32(&phyregs->miimind) & (MIIMIND_NOTVALID | MIIMIND_BUSY))
@@ -102,7 +104,7 @@ int fsl_pq_mdio_init(bd_t *bis, struct fsl_pq_mdio_info *info)
 	bus->read = tsec_phy_read;
 	bus->write = tsec_phy_write;
 	bus->reset = fsl_pq_mdio_reset;
-	sprintf(bus->name, info->name);
+	strcpy(bus->name, info->name);
 
 	bus->priv = (void *)info->regs;
 

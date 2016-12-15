@@ -18,8 +18,6 @@
  * High Level Configuration Options
  * (easy to change)
  */
-#define CONFIG_MCF5227x		/* define processor family */
-#define CONFIG_M52277		/* define processor type */
 #define CONFIG_M52277EVB	/* M52277EVB board */
 
 #define CONFIG_MCFUART
@@ -39,25 +37,10 @@
 #define CONFIG_BOOTP_HOSTNAME
 
 /* Command line configuration */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_CACHE
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_ELF
-#define CONFIG_CMD_FLASH
-#define CONFIG_CMD_I2C
 #define CONFIG_CMD_JFFS2
-#define CONFIG_CMD_LOADB
-#define CONFIG_CMD_LOADS
-#define CONFIG_CMD_MEMORY
-#define CONFIG_CMD_MISC
-#undef CONFIG_CMD_NET
-#undef CONFIG_CMD_NFS
 #define CONFIG_CMD_REGINFO
-#undef CONFIG_CMD_USB
 #undef CONFIG_CMD_BMP
-#define CONFIG_CMD_SPI
-#define CONFIG_CMD_SF
 
 #define CONFIG_HOSTNAME			M52277EVB
 #define CONFIG_SYS_UBOOT_END		0x3FFFF
@@ -99,10 +82,8 @@
 	""
 #endif
 
-#define CONFIG_BOOTDELAY		3	/* autoboot after 3 seconds */
 /* LCD */
 #ifdef CONFIG_CMD_BMP
-#define CONFIG_LCD
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_LCD_LOGO
 #define CONFIG_SHARP_LQ035Q7DH06
@@ -111,7 +92,6 @@
 /* USB */
 #ifdef CONFIG_CMD_USB
 #define CONFIG_USB_EHCI
-#define CONFIG_USB_STORAGE
 #define CONFIG_DOS_PARTITION
 #define CONFIG_MAC_PARTITION
 #define CONFIG_ISO_PARTITION
@@ -143,8 +123,6 @@
 #define CONFIG_SYS_SBFHDR_SIZE		0x7
 #ifdef CONFIG_CMD_SPI
 #	define CONFIG_SYS_DSPI_CS2
-#	define CONFIG_SPI_FLASH
-#	define CONFIG_SPI_FLASH_STMICRO
 
 #	define CONFIG_SYS_DSPI_CTAR0	(DSPI_CTAR_TRSZ(7) | \
 					 DSPI_CTAR_PCSSCK_1CLK | \
@@ -162,7 +140,6 @@
 
 #define CONFIG_PRAM		2048	/* 2048 KB */
 
-#define CONFIG_SYS_PROMPT	"-> "
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
 
 #if defined(CONFIG_CMD_KGDB)
@@ -268,6 +245,10 @@
 #	define CONFIG_SYS_FLASH_CHECKSUM
 #	define CONFIG_SYS_FLASH_BANKS_LIST	{ CONFIG_SYS_CS0_BASE }
 #endif
+
+#define LDS_BOARD_TEXT \
+        arch/m68k/cpu/mcf5227x/built-in.o   (.text*) \
+	arch/m68k/lib/built-in.o            (.text*)
 
 /*
  * This is setting for JFFS2 support in u-boot.

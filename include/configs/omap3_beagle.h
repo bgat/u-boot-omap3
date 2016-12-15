@@ -29,12 +29,6 @@
 
 #include <configs/ti_omap3_common.h>
 
-/*
- * Display CPU and Board information
- */
-#define CONFIG_DISPLAY_CPUINFO		1
-#define CONFIG_DISPLAY_BOARDINFO	1
-
 #define CONFIG_MISC_INIT_R
 
 #define CONFIG_REVISION_TAG		1
@@ -59,26 +53,18 @@
 #define CONFIG_SYS_I2C_NOPROBES		{{0x0, 0x0}}
 
 /* USB */
-#define CONFIG_MUSB_GADGET
 #define CONFIG_USB_MUSB_OMAP2PLUS
-#define CONFIG_MUSB_PIO_ONLY
-#define CONFIG_USB_GADGET_DUALSPEED
+#define CONFIG_USB_MUSB_PIO_ONLY
 #define CONFIG_TWL4030_USB		1
 #define CONFIG_USB_ETHER
 #define CONFIG_USB_ETHER_RNDIS
-#define CONFIG_USB_GADGET
-#define CONFIG_USB_GADGET_VBUS_DRAW	0
-#define CONFIG_USBDOWNLOAD_GADGET
-#define CONFIG_G_DNL_VENDOR_NUM		0x0451
-#define CONFIG_G_DNL_PRODUCT_NUM	0xd022
-#define CONFIG_G_DNL_MANUFACTURER	"TI"
+#define CONFIG_USB_FUNCTION_FASTBOOT
 #define CONFIG_CMD_FASTBOOT
 #define CONFIG_ANDROID_BOOT_IMAGE
-#define CONFIG_USB_FASTBOOT_BUF_ADDR	CONFIG_SYS_LOAD_ADDR
-#define CONFIG_USB_FASTBOOT_BUF_SIZE	0x07000000
+#define CONFIG_FASTBOOT_BUF_ADDR	CONFIG_SYS_LOAD_ADDR
+#define CONFIG_FASTBOOT_BUF_SIZE	0x07000000
 
 /* USB EHCI */
-#define CONFIG_CMD_USB
 #define CONFIG_USB_EHCI
 
 #define CONFIG_USB_EHCI_OMAP
@@ -95,23 +81,14 @@
 #define CONFIG_OMAP3_GPIO_6		/* GPIO160..191 is in GPIO bank 6 */
 
 /* commands to include */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_ASKENV
-
-#define CONFIG_CMD_CACHE
 
 #define MTDIDS_DEFAULT			"nand0=nand"
 #define MTDPARTS_DEFAULT		"mtdparts=nand:512k(x-loader),"\
 					"1920k(u-boot),128k(u-boot-env),"\
 					"4m(kernel),-(fs)"
 
-#define CONFIG_USB_STORAGE	/* USB storage support		*/
 #define CONFIG_CMD_NAND		/* NAND support			*/
 #define CONFIG_CMD_LED		/* LED support			*/
-#define CONFIG_CMD_SETEXPR	/* Evaluate expressions		*/
-#define CONFIG_CMD_GPIO     /* Enable gpio command */
-#define CONFIG_CMD_DHCP
 
 #define CONFIG_VIDEO_OMAP3	/* DSS Support			*/
 
@@ -123,7 +100,6 @@
 /*
  * Board NAND Info.
  */
-#define CONFIG_SYS_NAND_QUIET_TEST	1
 #define CONFIG_NAND_OMAP_GPMC
 #define CONFIG_SYS_MAX_NAND_DEVICE	1		/* Max number of NAND */
 							/* devices */
@@ -195,7 +171,7 @@
 	"bootenv=uEnv.txt\0" \
 	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
-		"env import -t $loadaddr $filesize\0" \
+		"env import -t -r $loadaddr $filesize\0" \
 	"ramargs=setenv bootargs console=${console} " \
 		"${optargs} " \
 		"mpurate=${mpurate} " \
@@ -207,6 +183,9 @@
 		"rootfstype=${ramrootfstype}\0" \
 	"loadramdisk=load mmc ${bootpart} ${rdaddr} ${bootdir}/${ramdisk}\0" \
 	"loadimage=load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
+	"loadbootscript=load mmc ${mmcdev} ${loadaddr} boot.scr\0" \
+	"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+		"source ${loadaddr}\0" \
 	"loadfdt=run validatefdt; load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
@@ -243,9 +222,13 @@
 			"echo Running uenvcmd ...;" \
 			"run uenvcmd;" \
 		"fi;" \
-		"if run loadimage; then " \
-			"run mmcboot;" \
-		"fi;" \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"else " \
+			"if run loadimage; then " \
+				"run mmcboot;" \
+			"fi;" \
+		"fi; " \
 	"fi;" \
 	"run nandboot;" \
 	"setenv bootfile zImage;" \
@@ -266,13 +249,8 @@
  */
 
 /* **** PISMO SUPPORT *** */
-
-/* Configure the PISMO */
-#define PISMO1_NAND_SIZE		GPMC_SIZE_128M
-#define PISMO1_ONEN_SIZE		GPMC_SIZE_128M
-
 #if defined(CONFIG_CMD_NAND)
-#define CONFIG_SYS_FLASH_BASE		PISMO1_NAND_BASE
+#define CONFIG_SYS_FLASH_BASE		NAND_BASE
 #endif
 
 /* Monitor at start of flash */
@@ -290,13 +268,11 @@
 
 #define CONFIG_OMAP3_SPI
 
-#define CONFIG_SYS_CACHELINE_SIZE	64
-
 /* Defines for SPL */
 #define CONFIG_SPL_OMAP3_ID_NAND
 
 /* NAND boot config */
-#define CONFIG_SYS_NAND_BUSWIDTH_16BIT	16
+#define CONFIG_SYS_NAND_BUSWIDTH_16BIT
 #define CONFIG_SYS_NAND_5_ADDR_CYCLE
 #define CONFIG_SYS_NAND_PAGE_COUNT	64
 #define CONFIG_SYS_NAND_PAGE_SIZE	2048
@@ -309,5 +285,11 @@
 #define CONFIG_SYS_NAND_ECCBYTES	3
 #define CONFIG_NAND_OMAP_ECCSCHEME	OMAP_ECC_HAM1_CODE_HW
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	0x80000
+/* NAND: SPL falcon mode configs */
+#ifdef CONFIG_SPL_OS_BOOT
+#define CONFIG_CMD_SPL_NAND_OFS		0x240000
+#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS	0x280000
+#define CONFIG_CMD_SPL_WRITE_SIZE	0x2000
+#endif
 
 #endif /* __CONFIG_H */

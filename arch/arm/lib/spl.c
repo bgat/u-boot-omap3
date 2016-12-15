@@ -13,25 +13,32 @@
 #include <image.h>
 #include <linux/compiler.h>
 
+#ifndef CONFIG_SPL_DM
 /* Pointer to as well as the global data structure for SPL */
 DECLARE_GLOBAL_DATA_PTR;
-gd_t gdata __attribute__ ((section(".data")));
 
 /*
- * In the context of SPL, board_init_f must ensure that any clocks/etc for
- * DDR are enabled, ensure that the stack pointer is valid, clear the BSS
- * and call board_init_f.  We provide this version by default but mark it
- * as __weak to allow for platforms to do this in their own way if needed.
+ * WARNING: This is going away very soon. Don't use it and don't submit
+ * pafches that rely on it. The global_data area is set up in crt0.S.
+ */
+gd_t gdata __attribute__ ((section(".data")));
+#endif
+
+/*
+ * In the context of SPL, board_init_f() prepares the hardware for execution
+ * from system RAM (DRAM, DDR...). As system RAM may not be available yet,
+ * board_init_f() must use the current GD to store any data which must be
+ * passed on to later stages. These data include the relocation destination,
+ * the future stack, and the future GD location. BSS is cleared after this
+ * function (and therefore must be accessible).
+ *
+ * We provide this version by default but mark it as __weak to allow for
+ * platforms to do this in their own way if needed. Please see the top
+ * level U-Boot README "Board Initialization Flow" section for info on what
+ * to put in this function.
  */
 void __weak board_init_f(ulong dummy)
 {
-	/* Clear the BSS. */
-	memset(__bss_start, 0, __bss_end - __bss_start);
-
-	/* Set global data pointer. */
-	gd = &gdata;
-
-	board_init_r(NULL, 0);
 }
 
 /*
@@ -40,7 +47,7 @@ void __weak board_init_f(ulong dummy)
  * arg: Pointer to paramter image in RAM
  */
 #ifdef CONFIG_SPL_OS_BOOT
-void __noreturn jump_to_image_linux(void *arg)
+void __noreturn jump_to_image_linux(struct spl_image_info *spl_image, void *arg)
 {
 	unsigned long machid = 0xffffffff;
 #ifdef CONFIG_MACH_TYPE
@@ -51,7 +58,7 @@ void __noreturn jump_to_image_linux(void *arg)
 	typedef void (*image_entry_arg_t)(int, int, void *)
 		__attribute__ ((noreturn));
 	image_entry_arg_t image_entry =
-		(image_entry_arg_t) spl_image.entry_point;
+		(image_entry_arg_t)(uintptr_t) spl_image->entry_point;
 	cleanup_before_linux();
 	image_entry(0, machid, arg);
 }

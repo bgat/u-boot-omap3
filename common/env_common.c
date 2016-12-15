@@ -27,12 +27,10 @@ struct hsearch_data env_htab = {
 	.change_ok = env_flags_validate,
 };
 
-static uchar __env_get_char_spec(int index)
+__weak uchar env_get_char_spec(int index)
 {
 	return *((uchar *)(gd->env_addr + index));
 }
-uchar env_get_char_spec(int)
-	__attribute__((weak, alias("__env_get_char_spec")));
 
 static uchar env_get_char_init(int index)
 {
@@ -120,11 +118,12 @@ void set_default_env(const char *s)
 	}
 
 	if (himport_r(&env_htab, (char *)default_environment,
-			sizeof(default_environment), '\0', flags,
+			sizeof(default_environment), '\0', flags, 0,
 			0, NULL) == 0)
 		error("Environment import failed: errno = %d\n", errno);
 
 	gd->flags |= GD_FLG_ENV_READY;
+	gd->flags |= GD_FLG_ENV_DEFAULT;
 }
 
 
@@ -137,7 +136,7 @@ int set_default_vars(int nvars, char * const vars[])
 	 */
 	return himport_r(&env_htab, (const char *)default_environment,
 				sizeof(default_environment), '\0',
-				H_NOCLEAR | H_INTERACTIVE, nvars, vars);
+				H_NOCLEAR | H_INTERACTIVE, 0, nvars, vars);
 }
 
 #ifdef CONFIG_ENV_AES
@@ -146,7 +145,7 @@ int set_default_vars(int nvars, char * const vars[])
  * env_aes_cbc_get_key() - Get AES-128-CBC key for the environment
  *
  * This function shall return 16-byte array containing AES-128 key used
- * to encrypt and decrypt the environment. This function must be overriden
+ * to encrypt and decrypt the environment. This function must be overridden
  * by the implementer as otherwise the environment encryption will not
  * work.
  */
@@ -214,7 +213,7 @@ int env_import(const char *buf, int check)
 		return ret;
 	}
 
-	if (himport_r(&env_htab, (char *)ep->data, ENV_SIZE, '\0', 0,
+	if (himport_r(&env_htab, (char *)ep->data, ENV_SIZE, '\0', 0, 0,
 			0, NULL)) {
 		gd->flags |= GD_FLG_ENV_READY;
 		return 1;
@@ -227,7 +226,7 @@ int env_import(const char *buf, int check)
 	return 0;
 }
 
-/* Emport the environment and generate CRC for it. */
+/* Export the environment and generate CRC for it. */
 int env_export(env_t *env_out)
 {
 	char *res;

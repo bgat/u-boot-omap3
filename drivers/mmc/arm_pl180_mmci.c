@@ -37,7 +37,7 @@ static int wait_for_command_end(struct mmc *dev, struct mmc_cmd *cmd)
 	writel(statusmask, &host->base->status_clear);
 	if (hoststatus & SDI_STA_CTIMEOUT) {
 		debug("CMD%d time out\n", cmd->cmdidx);
-		return TIMEOUT;
+		return -ETIMEDOUT;
 	} else if ((hoststatus & SDI_STA_CCRCFAIL) &&
 		   (cmd->resp_type & MMC_RSP_CRC)) {
 		printf("CMD%d CRC error\n", cmd->cmdidx);
@@ -375,7 +375,7 @@ int arm_pl180_mmci_init(struct pl180_mmc_host *host)
 	if (mmc == NULL)
 		return -1;
 
-	debug("registered mmc interface number is:%d\n", mmc->block_dev.dev);
+	debug("registered mmc interface number is:%d\n", mmc->block_dev.devnum);
 
 	return 0;
 }

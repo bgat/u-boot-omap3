@@ -13,6 +13,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 #include <common.h>
+#include <console.h>
 #include <libfdt.h>
 #include <fdt_support.h>
 #include <asm/ppc440.h>
@@ -881,8 +882,8 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif /* defined(CONFIG_USB_OHCI) && defined(CONFIG_SYS_USB_OHCI_BOARD_INIT) */
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
-void ft_board_setup(void *blob, bd_t *bd)
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, bd_t *bd)
 {
 	int rc;
 
@@ -899,5 +900,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 			printf("err=%s\n", fdt_strerror(rc));
 		}
 	}
+
+	return 0;
 }
-#endif /* defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP) */
+#endif /* CONFIG_OF_BOARD_SETUP */

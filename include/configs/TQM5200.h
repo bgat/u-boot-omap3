@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2005
+ * (C) Copyright 2003-2014
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
  * (C) Copyright 2004-2006
@@ -51,7 +51,6 @@
 
 #ifdef CONFIG_FO300
 #define CONFIG_SYS_DEVICE_NULLDEV		1	/* enable null device */
-#define CONFIG_SILENT_CONSOLE		1	/* enable silent startup */
 #define CONFIG_BOARD_EARLY_INIT_F	1	/* used to detect S1 switch position */
 #define CONFIG_USB_BIN_FIXUP		1	/* for a buggy USB device */
 #if 0
@@ -77,8 +76,6 @@
  * 0x50000000 - 0x50ffffff - PCI IO Space
  */
 #if defined(CONFIG_CHARON) || defined(CONFIG_STK52XX)
-#define CONFIG_PCI		1
-#define CONFIG_PCI_PNP		1
 /* #define CONFIG_PCI_SCAN_SHOW	1 */
 
 #define CONFIG_PCI_MEM_BUS	0x40000000
@@ -98,24 +95,17 @@
  * Video console
  */
 #ifndef CONFIG_TQM5200S		/* No graphics controller on TQM5200S */
-#define CONFIG_VIDEO
 #define CONFIG_VIDEO_SM501
 #define CONFIG_VIDEO_SM501_32BPP
-#define CONFIG_CFB_CONSOLE
 #define CONFIG_VIDEO_LOGO
 
 #ifndef CONFIG_FO300
-#define CONFIG_CONSOLE_EXTRA_INFO
 #else
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
-#define CONFIG_VGA_AS_SINGLE_DEVICE
-#define CONFIG_VIDEO_SW_CURSOR
 #define CONFIG_SPLASH_SCREEN
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 #endif /* #ifndef CONFIG_TQM5200S */
-
 
 /* Partitions */
 #define CONFIG_MAC_PARTITION
@@ -127,9 +117,6 @@
     defined(CONFIG_STK52XX)
 #define CONFIG_USB_OHCI_NEW
 #define CONFIG_SYS_OHCI_BE_CONTROLLER
-#define CONFIG_USB_STORAGE
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_USB
 
 #undef CONFIG_SYS_USB_OHCI_BOARD_INIT
 #define CONFIG_SYS_USB_OHCI_CPU_INIT
@@ -151,7 +138,6 @@
 #define MPC5XXX_SRAM_POST_SIZE MPC5XXX_SRAM_SIZE-4
 #endif
 
-
 /*
  * BOOTP options
  */
@@ -160,23 +146,13 @@
 #define CONFIG_BOOTP_GATEWAY
 #define CONFIG_BOOTP_HOSTNAME
 
-
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_ASKENV
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_I2C
 #define CONFIG_CMD_JFFS2
-#define CONFIG_CMD_MII
-#define CONFIG_CMD_NFS
-#define CONFIG_CMD_PING
 #define CONFIG_CMD_REGINFO
-#define CONFIG_CMD_SNTP
 #define CONFIG_CMD_BSP
 
 #ifdef CONFIG_VIDEO
@@ -191,8 +167,6 @@
 #if defined(CONFIG_CHARON) || defined(CONFIG_FO300) || \
 	defined(CONFIG_MINIFAP) || defined(CONFIG_STK52XX)
     #define CONFIG_CMD_IDE
-    #define CONFIG_CMD_FAT
-    #define CONFIG_CMD_EXT2
 #endif
 
 #if defined(CONFIG_CHARON) || defined(CONFIG_FO300) || \
@@ -205,7 +179,6 @@
     #define CONFIG_CMD_DIAG
 #endif
 
-
 #define	CONFIG_TIMESTAMP		/* display image timestamps */
 
 #if (CONFIG_SYS_TEXT_BASE != 0xFFF00000)
@@ -215,7 +188,6 @@
 /*
  * Autobooting
  */
-#define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds */
 
 #define CONFIG_PREBOOT	"echo;" \
 	"echo Type \\\"run flash_nfs\\\" to mount root filesystem over NFS;" \
@@ -336,7 +308,7 @@
  *
  * Please notice, that the resulting clock frequency could differ from the
  * configured value. This is because the I2C clock is derived from system
- * clock over a frequency divider with only a few divider values. U-boot
+ * clock over a frequency divider with only a few divider values. U-Boot
  * calculates the best approximation for CONFIG_SYS_I2C_SPEED. However the calculated
  * approximation allways lies below the configured value, never above.
  */
@@ -492,7 +464,6 @@
 #define CONFIG_SYS_INIT_RAM_SIZE	MPC5XXX_SRAM_SIZE
 #endif
 
-
 #define CONFIG_SYS_GBL_DATA_OFFSET	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_OFFSET	CONFIG_SYS_GBL_DATA_OFFSET
 
@@ -606,7 +577,6 @@
 #define CONFIG_SYS_LONGHELP			/* undef to save memory	    */
 
 #define CONFIG_CMDLINE_EDITING	1	/* add command line history	*/
-#define	CONFIG_SYS_HUSH_PARSER		1	/* use "hush" command parser	*/
 
 #define CONFIG_SYS_CACHELINE_SIZE	32	/* For MPC5xxx CPUs */
 #if defined(CONFIG_CMD_KGDB)
@@ -629,11 +599,6 @@
 #define CONFIG_SYS_MEMTEST_END		0x00f00000	/* 1 ... 15 MB in DRAM	*/
 
 #define CONFIG_SYS_LOAD_ADDR		0x100000	/* default load address */
-
-/*
- * Enable loopw command.
- */
-#define CONFIG_LOOPW
 
 /*
  * Various low-level settings
@@ -732,9 +697,6 @@
  * Open firmware flat tree support
  *-----------------------------------------------------------------------
  */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-
 #define OF_CPU			"PowerPC,5200@0"
 #define OF_SOC			"soc5200@f0000000"
 #define OF_TBCLK		(bd->bi_busfreq / 4)

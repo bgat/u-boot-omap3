@@ -3,6 +3,9 @@
 # the kernel for the build process.
 # ---------------------------------------------------------------------------
 # docproc:       Used in Documentation/DocBook
+#
+# SPDX-License-Identifier:	GPL-2.0
+#
 
 # The following hostprogs-y programs are only build on demand
 hostprogs-y += docproc
@@ -13,4 +16,4 @@ build_docproc: $(obj)/docproc
 	@:
 
 # Let clean descend into subdirs
-subdir-	+= basic
+subdir-	+= basic kconfig

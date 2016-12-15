@@ -50,8 +50,6 @@
  * 0x40000000 - 0x4fffffff - PCI Memory
  * 0x50000000 - 0x50ffffff - PCI IO Space
  */
-#define CONFIG_PCI		1
-#define CONFIG_PCI_PNP		1
 #define CONFIG_PCI_SCAN_SHOW	1
 #define CONFIG_PCI_BOOTDELAY	250
 
@@ -72,18 +70,13 @@
 /*
  * Video
  */
-#define CONFIG_VIDEO
 
 #ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_MB862xx
 #define CONFIG_VIDEO_MB862xx_ACCEL
 #define CONFIG_VIDEO_CORALP
-#define CONFIG_CFB_CONSOLE
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_VIDEO_SW_CURSOR
-#define CONFIG_VGA_AS_SINGLE_DEVICE
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE	(2 << 20)	/* decompressed img */
@@ -97,29 +90,17 @@
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-
 #ifdef CONFIG_VIDEO
 #define CONFIG_CMD_BMP
 #endif
-#define CONFIG_CMD_CACHE
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_DIAG
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
-#define CONFIG_CMD_EXT2
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_I2C
 #define CONFIG_CMD_IDE
 #define CONFIG_CMD_IRQ
-#define CONFIG_CMD_MII
 #define CONFIG_CMD_PCI
-#define CONFIG_CMD_PING
 #define CONFIG_CMD_REGINFO
 #define CONFIG_CMD_SAVES
-#define CONFIG_CMD_SPI
-#define CONFIG_CMD_USB
 
 #if (CONFIG_SYS_TEXT_BASE == 0xFF000000)
 #define CONFIG_SYS_LOWBOOT	1
@@ -128,7 +109,6 @@
 /*
  * Autobooting
  */
-#define CONFIG_BOOTDELAY	1
 
 #undef	CONFIG_BOOTARGS
 
@@ -298,9 +278,6 @@
 #define CONFIG_SYS_FLASH_ERASE_TOUT	240000
 #define CONFIG_SYS_FLASH_WRITE_TOUT	500
 
-#define CONFIG_OF_LIBFDT  1
-#define CONFIG_OF_BOARD_SETUP	1
-
 #define OF_CPU			"PowerPC,5200@0"
 #define OF_SOC			"soc5200@f0000000"
 #define OF_TBCLK		(bd->bi_busfreq / 4)
@@ -392,15 +369,8 @@
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_AUTO_COMPLETE	1
 #define CONFIG_CMDLINE_EDITING	1
-#define CONFIG_SYS_HUSH_PARSER
 
-#define CONFIG_AUTOBOOT_KEYED
-#define CONFIG_AUTOBOOT_PROMPT "autoboot in %d seconds\n", bootdelay
-#define CONFIG_AUTOBOOT_DELAY_STR	" "
-
-#define CONFIG_LOOPW		1
 #define CONFIG_MX_CYCLIC	1
-#define CONFIG_ZERO_BOOTDELAY_CHECK
 
 #define CONFIG_SYS_CBSIZE		1024
 #define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)
@@ -457,7 +427,6 @@
  */
 #define CONFIG_USB_OHCI_NEW
 #define CONFIG_SYS_OHCI_BE_CONTROLLER
-#define CONFIG_USB_STORAGE
 
 #define CONFIG_USB_CLOCK	0x00013333
 #define CONFIG_USB_CONFIG	0x00002000

@@ -16,10 +16,9 @@
  * shifts the remaining entries to the front. Replacing an entry is a
  * combination of deleting the old value and adding the new one.
  *
- * The environment is preceeded by a 32 bit CRC over the data part.
+ * The environment is preceded by a 32 bit CRC over the data part.
  *
- **************************************************************************
- */
+ *************************************************************************/
 
 #if defined(CONFIG_ENV_IS_IN_FLASH)
 # ifndef	CONFIG_ENV_ADDR
@@ -178,6 +177,15 @@ extern unsigned char env_get_char_spec(int);
 
 #if defined(CONFIG_NEEDS_MANUAL_RELOC)
 extern void env_reloc(void);
+#endif
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+#include <mmc.h>
+
+extern int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr);
+# ifdef CONFIG_SYS_MMC_ENV_PART
+extern uint mmc_get_env_part(struct mmc *mmc);
+# endif
 #endif
 
 #ifndef DO_DEPS_ONLY

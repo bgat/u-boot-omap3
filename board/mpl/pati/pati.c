@@ -29,6 +29,7 @@
  **********************************************************************************/
 
 #include <common.h>
+#include <console.h>
 #include <mpc5xx.h>
 #include <stdio_dev.h>
 #include <pci_ids.h>
@@ -311,6 +312,11 @@ void user_led1(int led_on)
 	sysconf->sc_sgpiodt2=reg; /* Data register */
 }
 
+int board_early_init_f(void)
+{
+	spi_init_f();
+	return 0;
+}
 
 /****************************************************************
  * Last Stage Init
@@ -445,7 +451,7 @@ void pci_con_put_it(const char c)
 	PCICON_SET_REG(PCICON_DBELL_REG,PCIMSG_CON_DATA);
 }
 
-void pci_con_putc(const char c)
+void pci_con_putc(struct stdio_dev *dev, const char c)
 {
 	pci_con_put_it(c);
 	if(c == '\n')
@@ -453,7 +459,7 @@ void pci_con_putc(const char c)
 }
 
 
-int pci_con_getc(void)
+int pci_con_getc(struct stdio_dev *dev)
 {
 	int res;
 	int diff;
@@ -473,14 +479,14 @@ int pci_con_getc(void)
 	return res;
 }
 
-int pci_con_tstc(void)
+int pci_con_tstc(struct stdio_dev *dev)
 {
 	if(r_ptr==(volatile int)w_ptr)
 		return 0;
 	return 1;
 }
 
-void pci_con_puts (const char *s)
+void pci_con_puts(struct stdio_dev *dev, const char *s)
 {
 	while (*s) {
 		pci_con_putc(*s);
@@ -561,7 +567,7 @@ void pci_con_connect(void)
 	irq_install_handler (0x2, (interrupt_handler_t *) pci_dorbell_irq,NULL);
 	memset (&pci_con_dev, 0, sizeof (pci_con_dev));
 	strcpy (pci_con_dev.name, "pci_con");
-	pci_con_dev.flags = DEV_FLAGS_OUTPUT | DEV_FLAGS_INPUT | DEV_FLAGS_SYSTEM;
+	pci_con_dev.flags = DEV_FLAGS_OUTPUT | DEV_FLAGS_INPUT;
 	pci_con_dev.putc = pci_con_putc;
 	pci_con_dev.puts = pci_con_puts;
 	pci_con_dev.getc = pci_con_getc;

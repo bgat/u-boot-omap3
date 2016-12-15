@@ -29,17 +29,13 @@ obj-y	+= ticks.o
 obj-y	+= reloc.o
 
 obj-$(CONFIG_BAT_RW) += bat_rw.o
-ifndef CONFIG_SPL_BUILD
-ifndef CONFIG_SYS_GENERIC_BOARD
-obj-y	+= board.o
-endif
-endif
 obj-$(CONFIG_CMD_BOOTM) += bootm.o
 obj-y	+= cache.o
 obj-y	+= extable.o
 obj-y	+= interrupts.o
 obj-$(CONFIG_CMD_KGDB) += kgdb.o
 obj-$(CONFIG_CMD_IDE) += ide.o
+obj-y	+= stack.o
 obj-y	+= time.o
 
 # Don't include the MPC5xxx special memcpy into the

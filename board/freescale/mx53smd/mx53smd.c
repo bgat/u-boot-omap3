@@ -11,7 +11,7 @@
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/iomux-mx53.h>
-#include <asm/errno.h>
+#include <linux/errno.h>
 #include <netdev.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -106,7 +106,7 @@ int board_mmc_init(bd_t *bis)
 	};
 
 	u32 index;
-	s32 status = 0;
+	int ret;
 
 	esdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 
@@ -121,12 +121,14 @@ int board_mmc_init(bd_t *bis)
 			printf("Warning: you configured more ESDHC controller"
 				"(%d) as supported by the board(1)\n",
 				CONFIG_SYS_FSL_ESDHC_NUM);
-			return status;
+			return -EINVAL;
 		}
-		status |= fsl_esdhc_initialize(bis, &esdhc_cfg[index]);
+		ret = fsl_esdhc_initialize(bis, &esdhc_cfg[index]);
+		if (ret)
+			return ret;
 	}
 
-	return status;
+	return 0;
 }
 #endif
 

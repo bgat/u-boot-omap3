@@ -124,8 +124,6 @@ static void emif_get_reg_dump_sdp(u32 emif_nr, const struct emif_regs **regs)
 		*regs = &emif_regs_elpida_380_mhz_1cs;
 	else if (omap4_rev == OMAP4430_ES2_0)
 		*regs = &emif_regs_elpida_200_mhz_2cs;
-	else if (omap4_rev == OMAP4430_ES2_3)
-		*regs = &emif_regs_elpida_400_mhz_1cs;
 	else if (omap4_rev < OMAP4470_ES1_0)
 		*regs = &emif_regs_elpida_400_mhz_2cs;
 	else
@@ -141,8 +139,6 @@ static void emif_get_dmm_regs_sdp(const struct dmm_lisa_map_regs
 
 	if (omap_rev == OMAP4430_ES1_0)
 		*dmm_lisa_regs = &lisa_map_2G_x_1_x_2;
-	else if (omap_rev == OMAP4430_ES2_3)
-		*dmm_lisa_regs = &lisa_map_2G_x_2_x_2;
 	else if (omap_rev < OMAP4460_ES1_0)
 		*dmm_lisa_regs = &lisa_map_2G_x_2_x_2;
 	else
@@ -154,14 +150,14 @@ void emif_get_dmm_regs(const struct dmm_lisa_map_regs **dmm_lisa_regs)
 
 #else
 
-static const struct lpddr2_device_details elpida_2G_S4_details = {
+const struct lpddr2_device_details elpida_2G_S4_details = {
 	.type		= LPDDR2_TYPE_S4,
 	.density	= LPDDR2_DENSITY_2Gb,
 	.io_width	= LPDDR2_IO_WIDTH_32,
 	.manufacturer	= LPDDR2_MANUFACTURER_ELPIDA
 };
 
-static const struct lpddr2_device_details elpida_4G_S4_details = {
+const struct lpddr2_device_details elpida_4G_S4_details = {
 	.type		= LPDDR2_TYPE_S4,
 	.density	= LPDDR2_DENSITY_4Gb,
 	.io_width	= LPDDR2_IO_WIDTH_32,
@@ -285,7 +281,7 @@ static const struct lpddr2_ac_timings *elpida_ac_timings[MAX_NUM_SPEEDBINS] = {
 		&timings_elpida_400_mhz
 };
 
-static const struct lpddr2_device_timings elpida_2G_S4_timings = {
+const struct lpddr2_device_timings elpida_2G_S4_timings = {
 	.ac_timings	= elpida_ac_timings,
 	.min_tck	= &min_tck_elpida,
 };

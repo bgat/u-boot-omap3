@@ -1,5 +1,5 @@
 /*
- * U-boot - start.S Startup file for Blackfin u-boot
+ * U-Boot - start.S Startup file for Blackfin U-Boot
  *
  * Copyright (c) 2005-2008 Analog Devices Inc.
  *
@@ -51,7 +51,7 @@ ENTRY(_start)
 #ifdef CONFIG_HW_WATCHDOG
 	/* Program the watchdog with default timeout of ~5 seconds.
 	 * That should be long enough to bootstrap ourselves up and
-	 * then the common u-boot code can take over.
+	 * then the common U-Boot code can take over.
 	 */
 	r1 = WDDIS;
 # ifdef __ADSPBF60x__
@@ -196,8 +196,8 @@ ENTRY(_start)
 	 * takes care of clearing things for us.
 	 */
 	serial_early_puts("Zero BSS");
-	r0.l = __bss_vma;
-	r0.h = __bss_vma;
+	r0.l = __bss_start;
+	r0.h = __bss_start;
 	r1 = 0 (x);
 	r2.l = __bss_len;
 	r2.h = __bss_len;
@@ -251,3 +251,13 @@ LENTRY(_get_pc)
 #endif
 	rts;
 ENDPROC(_get_pc)
+
+ENTRY(_relocate_code)
+	/* Fake relocate code. Setup the new stack only */
+	sp = r0;
+	fp = sp;
+	r0 = p3;
+	r1.h = 0x2000;
+	r1.l = 0x10;
+	jump.l _board_init_r
+ENDPROC(_relocate_code)

@@ -2,20 +2,7 @@
  * (C) Copyright 2013
  * Reinhard Pfau, Guntermann & Drunck GmbH, reinhard.pfau@gdsys.cc
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301, USA.
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /* TODO: some more #ifdef's to avoid unneeded code for stage 1 / stage 2 */
@@ -232,18 +219,18 @@ static int ccdm_mmc_read(struct mmc *mmc, u64 src, u8 *dst, int size)
 	ofs = src % blk_len;
 
 	if (ofs) {
-		n = mmc->block_dev.block_read(mmc->block_dev.dev, block_no++, 1,
+		n = mmc->block_dev.block_read(&mmc->block_dev, block_no++, 1,
 			tmp_buf);
 		if (!n)
 			goto failure;
-		result = min(size, blk_len - ofs);
+		result = min(size, (int)(blk_len - ofs));
 		memcpy(dst, tmp_buf + ofs, result);
 		dst += result;
 		size -= result;
 	}
 	cnt = size / blk_len;
 	if (cnt) {
-		n = mmc->block_dev.block_read(mmc->block_dev.dev, block_no, cnt,
+		n = mmc->block_dev.block_read(&mmc->block_dev, block_no, cnt,
 			dst);
 		if (n != cnt)
 			goto failure;
@@ -253,7 +240,7 @@ static int ccdm_mmc_read(struct mmc *mmc, u64 src, u8 *dst, int size)
 		block_no += cnt;
 	}
 	if (size) {
-		n = mmc->block_dev.block_read(mmc->block_dev.dev, block_no++, 1,
+		n = mmc->block_dev.block_read(&mmc->block_dev, block_no++, 1,
 			tmp_buf);
 		if (!n)
 			goto failure;
@@ -736,7 +723,8 @@ do_bin_func:
 				src_buf = buf;
 				for (ptr = (uint8_t *)src_buf, i = 20; i > 0;
 					i -= data_size, ptr += data_size)
-					memcpy(ptr, data, min(i, data_size));
+					memcpy(ptr, data,
+					       min_t(size_t, i, data_size));
 			}
 		}
 		bin_func(dst_reg->digest, src_buf, 20);
@@ -931,11 +919,12 @@ static struct key_program *load_key_chunk(const char *ifname,
 	struct key_program header;
 	uint32_t crc;
 	uint8_t buf[12];
-	int i;
+	loff_t i;
 
 	if (fs_set_blk_dev(ifname, dev_part_str, fs_type))
 		goto failure;
-	i = fs_read(path, (ulong)buf, 0, 12);
+	if (fs_read(path, (ulong)buf, 0, 12, &i) < 0)
+		goto failure;
 	if (i < 12)
 		goto failure;
 	header.magic = get_unaligned_be32(buf);
@@ -950,8 +939,9 @@ static struct key_program *load_key_chunk(const char *ifname,
 		goto failure;
 	if (fs_set_blk_dev(ifname, dev_part_str, fs_type))
 		goto failure;
-	i = fs_read(path, (ulong)result, 0,
-		sizeof(struct key_program) + header.code_size);
+	if (fs_read(path, (ulong)result, 0,
+		    sizeof(struct key_program) + header.code_size, &i) < 0)
+		goto failure;
 	if (i <= 0)
 		goto failure;
 	*result = header;
@@ -1042,7 +1032,7 @@ static int second_stage_init(void)
 	const char *image_path = "/ccdm.itb";
 	char *mac_path = NULL;
 	ulong image_addr;
-	size_t image_size;
+	loff_t image_size;
 	uint32_t err;
 
 	printf("CCDM S2\n");
@@ -1084,10 +1074,11 @@ static int second_stage_init(void)
 	image_addr = (ulong)get_image_location();
 	if (fs_set_blk_dev("mmc", mmcdev, FS_TYPE_EXT))
 		goto failure;
-	image_size = fs_read(image_path, image_addr, 0, 0);
+	if (fs_read(image_path, image_addr, 0, 0, &image_size) < 0)
+		goto failure;
 	if (image_size <= 0)
 		goto failure;
-	printf("CCDM image found on %s, %d bytes\n", mmcdev, image_size);
+	printf("CCDM image found on %s, %lld bytes\n", mmcdev, image_size);
 
 	hmac_blob = load_key_chunk("mmc", mmcdev, FS_TYPE_EXT, mac_path);
 	if (!hmac_blob) {

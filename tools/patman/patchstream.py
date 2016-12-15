@@ -3,6 +3,7 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+import math
 import os
 import re
 import shutil
@@ -72,7 +73,6 @@ class PatchStream:
         self.in_change = 0               # Non-zero if we are in a change list
         self.blank_count = 0             # Number of blank lines stored up
         self.state = STATE_MSG_HEADER    # What state are we in?
-        self.tags = []                   # Tags collected, like Tested-by...
         self.signoff = []                # Contents of signoff line
         self.commit = None               # Current commit
 
@@ -112,16 +112,14 @@ class PatchStream:
         if self.commit and self.is_log:
             self.series.AddCommit(self.commit)
             self.commit = None
-
-    def FormatTags(self, tags):
-        out_list = []
-        for tag in sorted(tags):
-            if tag.startswith('Cc:'):
-                tag_list = tag[4:].split(',')
-                out_list += gitutil.BuildEmailList(tag_list, 'Cc:')
-            else:
-                out_list.append(tag)
-        return out_list
+        # If 'END' is missing in a 'Cover-letter' section, and that section
+        # happens to show up at the very end of the commit message, this is
+        # the chance for us to fix it up.
+        if self.in_section == 'cover' and self.is_log:
+            self.series.cover = self.section
+            self.in_section = None
+            self.skip_blank = True
+            self.section = []
 
     def ProcessLine(self, line):
         """Process a single line of a patch file or commit log
@@ -150,6 +148,9 @@ class PatchStream:
         # Initially we have no output. Prepare the input line string
         out = []
         line = line.rstrip('\n')
+
+        commit_match = re_commit.match(line) if self.is_log else None
+
         if self.is_log:
             if line[:4] == '    ':
                 line = line[4:]
@@ -157,7 +158,7 @@ class PatchStream:
         # Handle state transition and skipping blank lines
         series_tag_match = re_series_tag.match(line)
         commit_tag_match = re_commit_tag.match(line)
-        commit_match = re_commit.match(line) if self.is_log else None
+        cover_match = re_cover.match(line)
         cover_cc_match = re_cover_cc.match(line)
         signoff_match = re_signoff.match(line)
         tag_match = None
@@ -175,6 +176,33 @@ class PatchStream:
                 self.state += 1
         elif commit_match:
             self.state = STATE_MSG_HEADER
+
+        # If a tag is detected, or a new commit starts
+        if series_tag_match or commit_tag_match or \
+           cover_match or cover_cc_match or signoff_match or \
+           self.state == STATE_MSG_HEADER:
+            # but we are already in a section, this means 'END' is missing
+            # for that section, fix it up.
+            if self.in_section:
+                self.warn.append("Missing 'END' in section '%s'" % self.in_section)
+                if self.in_section == 'cover':
+                    self.series.cover = self.section
+                elif self.in_section == 'notes':
+                    if self.is_log:
+                        self.series.notes += self.section
+                elif self.in_section == 'commit-notes':
+                    if self.is_log:
+                        self.commit.notes += self.section
+                else:
+                    self.warn.append("Unknown section '%s'" % self.in_section)
+                self.in_section = None
+                self.skip_blank = True
+                self.section = []
+            # but we are already in a change list, that means a blank line
+            # is missing, fix it up.
+            if self.in_change:
+                self.warn.append("Missing 'blank line' in section 'Series-changes'")
+                self.in_change = 0
 
         # If we are in a section, keep collecting lines until we see END
         if self.in_section:
@@ -211,7 +239,7 @@ class PatchStream:
             self.skip_blank = False
 
         # Detect the start of a cover letter section
-        elif re_cover.match(line):
+        elif cover_match:
             self.in_section = 'cover'
             self.skip_blank = False
 
@@ -259,8 +287,7 @@ class PatchStream:
         # Detect the start of a new commit
         elif commit_match:
             self.CloseCommit()
-            # TODO: We should store the whole hash, and just display a subset
-            self.commit = commit.Commit(commit_match.group(1)[:8])
+            self.commit = commit.Commit(commit_match.group(1))
 
         # Detect tags in the commit message
         elif tag_match:
@@ -271,11 +298,11 @@ class PatchStream:
             elif tag_match.group(1) == 'Patch-cc':
                 self.commit.AddCc(tag_match.group(2).split(','))
             else:
-                self.tags.append(line);
+                out = [line]
 
         # Suppress duplicate signoffs
         elif signoff_match:
-            if (self.is_log or
+            if (self.is_log or not self.commit or
                 self.commit.CheckDuplicateSignoff(signoff_match.group(1))):
                 out = [line]
 
@@ -311,8 +338,10 @@ class PatchStream:
                 # Output the tags (signeoff first), then change list
                 out = []
                 log = self.series.MakeChangeLog(self.commit)
-                out += self.FormatTags(self.tags)
-                out += [line] + self.commit.notes + [''] + log
+                out += [line]
+                if self.commit:
+                    out += self.commit.notes
+                out += [''] + log
             elif self.found_test:
                 if not re_allowed_after_test.match(line):
                     self.lines_after_test += 1
@@ -364,7 +393,7 @@ class PatchStream:
 
 
 def GetMetaDataForList(commit_range, git_dir=None, count=None,
-                       series = Series()):
+                       series = None, allow_overwrite=False):
     """Reads out patch series metadata from the commits
 
     This does a 'git log' on the relevant commits and pulls out the tags we
@@ -376,17 +405,16 @@ def GetMetaDataForList(commit_range, git_dir=None, count=None,
         count: Number of commits to list, or None for no limit
         series: Series object to add information into. By default a new series
             is started.
+        allow_overwrite: Allow tags to overwrite an existing tag
     Returns:
         A Series object containing information about the commits.
     """
-    params = ['git', 'log', '--no-color', '--reverse', '--no-decorate',
-                    commit_range]
-    if count is not None:
-        params[2:2] = ['-n%d' % count]
-    if git_dir:
-        params[1:1] = ['--git-dir', git_dir]
-    pipe = [params]
-    stdout = command.RunPipe(pipe, capture=True).stdout
+    if not series:
+        series = Series()
+    series.allow_overwrite = allow_overwrite
+    params = gitutil.LogCmd(commit_range, reverse=True, count=count,
+                            git_dir=git_dir)
+    stdout = command.RunPipe([params], capture=True).stdout
     ps = PatchStream(series, is_log=True)
     for line in stdout.splitlines():
         ps.ProcessLine(line)
@@ -452,12 +480,12 @@ def FixPatches(series, fnames):
         commit.patch = fname
         result = FixPatch(backup_dir, fname, series, commit)
         if result:
-            print '%d warnings for %s:' % (len(result), fname)
+            print('%d warnings for %s:' % (len(result), fname))
             for warn in result:
-                print '\t', warn
+                print('\t', warn)
             print
         count += 1
-    print 'Cleaned %d patches' % count
+    print('Cleaned %d patches' % count)
     return series
 
 def InsertCoverLetter(fname, series, count):
@@ -477,8 +505,10 @@ def InsertCoverLetter(fname, series, count):
     prefix = series.GetPatchPrefix()
     for line in lines:
         if line.startswith('Subject:'):
-            # TODO: if more than 10 patches this should save 00/xx, not 0/xx
-            line = 'Subject: [%s 0/%d] %s\n' % (prefix, count, text[0])
+            # if more than 10 or 100 patches, it should say 00/xx, 000/xxx, etc
+            zero_repeat = int(math.log10(count)) + 1
+            zero = '0' * zero_repeat
+            line = 'Subject: [%s %s/%d] %s\n' % (prefix, zero, count, text[0])
 
         # Insert our cover letter
         elif line.startswith('*** BLURB HERE ***'):

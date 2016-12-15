@@ -22,7 +22,7 @@ extra-$(CONFIG_PPC)                += sched
 ELF := $(strip $(extra-y))
 
 extra-y += $(addsuffix .srec,$(extra-y)) $(addsuffix .bin,$(extra-y))
-clean-files  := $(extra-) $(addsuffix .srec,$(extra-)) $(addsuffix .bin,$(extra-))
+clean-files  := *.srec *.bin
 
 COBJS	:= $(ELF:=.o)
 
@@ -73,3 +73,13 @@ $(obj)/%.srec: $(obj)/% FORCE
 $(obj)/%.bin: OBJCOPYFLAGS := -O binary
 $(obj)/%.bin: $(obj)/% FORCE
 	$(call if_changed,objcopy)
+
+# some files can only build in ARM or THUMB2, not THUMB1
+
+ifdef CONFIG_SYS_THUMB_BUILD
+ifndef CONFIG_HAS_THUMB2
+
+CFLAGS_stubs.o := -marm
+
+endif
+endif

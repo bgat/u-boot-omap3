@@ -378,7 +378,7 @@ void ide_set_reset(int idereset)
 #endif /* CONFIG_IDE_RESET */
 #endif /* CONFIG_CMD_IDE */
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+#ifdef CONFIG_OF_BOARD_SETUP
 static void ft_delete_node(void *fdt, const char *compat)
 {
 	int off = -1;
@@ -454,7 +454,7 @@ int update_flash_size (int flash_size)
 }
 #endif /* defined(CONFIG_SYS_UPDATE_FLASH_SIZE) */
 
-void ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, bd_t *bd)
 {
 	int phy_addr = CONFIG_PHY_ADDR;
 	char eth_path[] = "/soc5200@f0000000/mdio@3000/ethernet-phy@0";
@@ -478,5 +478,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 #endif
 	/* fix up the phy address */
 	do_fixup_by_path(blob, eth_path, "reg", &phy_addr, sizeof(int), 0);
+
+	return 0;
 }
-#endif /* defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP) */
+#endif /* CONFIG_OF_BOARD_SETUP */

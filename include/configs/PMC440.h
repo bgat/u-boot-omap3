@@ -82,7 +82,6 @@
  * Serial Port
  *----------------------------------------------------------------------*/
 #define CONFIG_CONS_INDEX	1	/* Use UART0			*/
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_serial_clock()
@@ -133,6 +132,7 @@
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_EEPROM
+#define CONFIG_I2C_ENV_EEPROM_BUS	0
 #define CONFIG_ENV_OFFSET		0	/* environment starts at the beginning of the EEPROM */
 #define CONFIG_ENV_SIZE		0x1000	/* 4096 bytes may be used for env vars */
 #endif
@@ -155,8 +155,6 @@
 #define CONFIG_SYS_I2C_PPC4XX_CH1
 #define CONFIG_SYS_I2C_PPC4XX_SPEED_1		400000
 #define CONFIG_SYS_I2C_PPC4XX_SLAVE_1		0x7F
-
-#define CONFIG_SYS_I2C_MULTI_EEPROMS
 
 #define CONFIG_SYS_I2C_EEPROM_ADDR		0x54
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN		2
@@ -229,7 +227,6 @@
 		"cp.b 200000 fff90000 70000\0"				\
 	""
 
-#define CONFIG_BOOTDELAY	3	/* autoboot after 3 seconds     */
 
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download  */
 #define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change        */
@@ -250,7 +247,6 @@
 
 /* USB */
 #define CONFIG_USB_OHCI_NEW
-#define CONFIG_USB_STORAGE
 #define CONFIG_SYS_OHCI_BE_CONTROLLER
 
 #define CONFIG_SYS_USB_OHCI_BOARD_INIT 1
@@ -267,23 +263,12 @@
 #define CONFIG_DOS_PARTITION
 #define CONFIG_ISO_PARTITION
 
-#include <config_cmd_default.h>
-
 #define CONFIG_CMD_BSP
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_DTT
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_MII
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_NET
-#define CONFIG_CMD_NFS
 #define CONFIG_CMD_PCI
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_USB
 #define CONFIG_CMD_REGINFO
 
 /* POST support */
@@ -298,8 +283,6 @@
 
 #define CONFIG_LOGBUFFER
 #define CONFIG_SYS_POST_CACHE_ADDR	0x7fff0000	/* free virtual address     */
-
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV	/* Otherwise it catches logbuffer as output */
 
 #define CONFIG_SUPPORT_VFAT
 
@@ -323,24 +306,13 @@
 #define CONFIG_SYS_EXTBDINFO		1	/* To use extended board_into (bd_t) */
 
 #define CONFIG_CMDLINE_EDITING	1	/* add command line history     */
-#define CONFIG_LOOPW		1	/* enable loopw command         */
 #define CONFIG_MX_CYCLIC	1	/* enable mdc/mwc commands      */
-#define CONFIG_ZERO_BOOTDELAY_CHECK	/* check for keypress on bootdelay==0 */
-#define CONFIG_VERSION_VARIABLE 1	/* include version env variable */
-
-#define CONFIG_AUTOBOOT_KEYED	1
-#define CONFIG_AUTOBOOT_PROMPT	\
-	"Press SPACE to abort autoboot in %d seconds\n", bootdelay
-#undef CONFIG_AUTOBOOT_DELAY_STR
-#define CONFIG_AUTOBOOT_STOP_STR " "
 
 /*-----------------------------------------------------------------------
  * PCI stuff
  *----------------------------------------------------------------------*/
 /* General PCI */
-#define CONFIG_PCI		/* include pci support          */
 #define CONFIG_PCI_INDIRECT_BRIDGE	/* indirect PCI bridge support */
-#define CONFIG_PCI_PNP		/* do (not) pci plug-and-play   */
 #define CONFIG_SYS_PCI_CACHE_LINE_SIZE	0	/* to avoid problems with PNP   */
 #define CONFIG_PCI_SCAN_SHOW	/* show pci devices on startup  */
 #define CONFIG_SYS_PCI_TARGBASE	0x80000000 /* PCIaddr mapped to CONFIG_SYS_PCI_MEMBASE */
@@ -412,15 +384,10 @@
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
 #define CONFIG_SYS_NAND_BASE		(CONFIG_SYS_NAND_ADDR + CONFIG_SYS_NAND_CS)
 #define CONFIG_SYS_NAND_SELECT_DEVICE	1 /* nand driver supports mutipl. chips */
-#define CONFIG_SYS_NAND_QUIET_TEST	1
 
 #if defined(CONFIG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
 #endif
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
 
 #define CONFIG_API		1
 

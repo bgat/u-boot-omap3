@@ -16,15 +16,9 @@
 #define _CONFIG_GOFLEXHOME_H
 
 /*
- * Version number information
- */
-#define CONFIG_IDENT_STRING	"\nSeagate GoFlex Home"
-
-/*
  * High Level Configuration Options (easy to change)
  */
 #define CONFIG_FEROCEON_88FR131	1	/* CPU Core subversion */
-#define CONFIG_KIRKWOOD		1	/* SOC Family Name */
 #define CONFIG_KW88F6281	1	/* SOC Name */
 #define CONFIG_MACH_GOFLEXHOME		/* Machine type */
 #define CONFIG_SKIP_LOWLEVEL_INIT	/* disable board lowlevel_init */
@@ -49,19 +43,11 @@
  * Commands configuration
  */
 #define CONFIG_SYS_NO_FLASH		/* Declare no flash (NOR/SPI) */
-#define CONFIG_CONSOLE_MUX
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 
-#include <config_cmd_default.h>
-#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_ENV
-#define CONFIG_CMD_MII
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_USB
 #define CONFIG_CMD_IDE
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_EXT4
 #define CONFIG_SYS_MVFS         /* Picks up Filesystem from mv-common.h */
 
 /*
@@ -69,9 +55,6 @@
  * to enable certain macros
  */
 #include "mv-common.h"
-
-#undef CONFIG_SYS_PROMPT	/* previously defined in mv-common.h */
-#define CONFIG_SYS_PROMPT	"GoFlexHome> "	/* Command Prompt */
 
 /*
  *  Environment variables configurations

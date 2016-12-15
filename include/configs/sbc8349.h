@@ -265,7 +265,6 @@
  * Serial Port
  */
 #define CONFIG_CONS_INDEX     1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE    1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -278,13 +277,6 @@
 
 #define CONFIG_CMDLINE_EDITING	1	/* add command line history	*/
 #define CONFIG_AUTO_COMPLETE		/* add autocompletion support   */
-/* Use the HUSH parser */
-#define CONFIG_SYS_HUSH_PARSER
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -337,8 +329,6 @@
 #undef PCI_TWO_PCI1
 #undef PCI_ONE_PCI1
 #endif
-
-#define CONFIG_PCI_PNP		/* do pci plug-and-play */
 
 #undef CONFIG_EEPRO100
 #undef CONFIG_TULIP
@@ -401,7 +391,6 @@
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download */
 #define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change */
 
-
 /*
  * BOOTP options
  */
@@ -410,25 +399,13 @@
 #define CONFIG_BOOTP_GATEWAY
 #define CONFIG_BOOTP_HOSTNAME
 
-
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_MII
-#define CONFIG_CMD_PING
 
 #if defined(CONFIG_PCI)
     #define CONFIG_CMD_PCI
 #endif
-
-#if defined(CONFIG_SYS_RAMBOOT)
-    #undef CONFIG_CMD_SAVEENV
-    #undef CONFIG_CMD_LOADS
-#endif
-
 
 #undef CONFIG_WATCHDOG			/* watchdog disabled */
 
@@ -537,7 +514,6 @@
 	HID0_ENABLE_INSTRUCTION_CACHE |\
 	HID0_ENABLE_M_BIT |\
 	HID0_ENABLE_ADDRESS_BROADCAST) */
-
 
 #define CONFIG_SYS_HID2 HID2_HBE
 
@@ -661,7 +637,6 @@
 				/* default location for tftp and bootm */
 #define CONFIG_LOADADDR		800000
 
-#define CONFIG_BOOTDELAY	6	/* -1 disables auto-boot */
 #undef  CONFIG_BOOTARGS		/* the boot command will set bootargs */
 
 #define CONFIG_BAUDRATE	 115200

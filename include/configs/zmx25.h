@@ -12,7 +12,6 @@
 
 #include <asm/arch/imx-regs.h>
 
-#define CONFIG_ARM926EJS			/* arm926ejs CPU core */
 #define CONFIG_MX25
 #define CONFIG_SYS_TEXT_BASE		0xA0000000
 
@@ -76,20 +75,10 @@
 /*
  * Command line configuration.
  */
-#include <config_cmd_default.h>
-#define CONFIG_CMD_NET
-#define CONFIG_CMD_CACHE
 
 /*
  * Additional command
  */
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_ELF
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_USB
-
-#define CONFIG_SYS_HUSH_PARSER
 
 /*
  * USB
@@ -102,7 +91,6 @@
 #define CONFIG_MXC_USB_PORTSC	MXC_EHCI_MODE_SERIAL
 #define CONFIG_MXC_USB_FLAGS	(MXC_EHCI_INTERNAL_PHY | MXC_EHCI_IPPUE_DOWN)
 #define CONFIG_EHCI_IS_TDI
-#define CONFIG_USB_STORAGE
 #define CONFIG_DOS_PARTITION
 #define CONFIG_SUPPORT_VFAT
 #endif /* CONFIG_CMD_USB */
@@ -139,7 +127,6 @@
 #define CONFIG_SYS_MEMTEST_START	(PHYS_SDRAM + (512*1024))
 #define CONFIG_SYS_MEMTEST_END		(PHYS_SDRAM + PHYS_SDRAM_SIZE)
 
-#define CONFIG_SYS_PROMPT	"zmx25> "
 #define CONFIG_SYS_CBSIZE	256
 #define CONFIG_SYS_MAXARGS	16
 #define CONFIG_SYS_PBSIZE	(CONFIG_SYS_CBSIZE + \
@@ -149,11 +136,6 @@
 
 #define CONFIG_PREBOOT  ""
 
-#define CONFIG_BOOTDELAY	5
-#define CONFIG_AUTOBOOT_KEYED
-#define CONFIG_AUTOBOOT_PROMPT "boot in %d s\n", bootdelay
-#define CONFIG_AUTOBOOT_DELAY_STR	"delaygs"
-#define CONFIG_AUTOBOOT_STOP_STR	"stopgs"
 
 /*
  * Size of malloc() pool

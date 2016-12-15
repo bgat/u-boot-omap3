@@ -10,13 +10,14 @@
 #include <asm/io.h>
 #include <asm/arch/sama5d3_smc.h>
 #include <asm/arch/at91_common.h>
-#include <asm/arch/at91_pmc.h>
 #include <asm/arch/at91_rstc.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/clk.h>
 #include <lcd.h>
-#include <atmel_lcdc.h>
+#include <linux/ctype.h>
+#include <atmel_hlcdc.h>
 #include <atmel_mci.h>
+#include <phy.h>
 #include <micrel.h>
 #include <net.h>
 #include <netdev.h>
@@ -67,6 +68,61 @@ void sama5d3xek_nand_hw_init(void)
 }
 #endif
 
+#ifndef CONFIG_SYS_NO_FLASH
+static void sama5d3xek_nor_hw_init(void)
+{
+	struct at91_smc *smc = (struct at91_smc *)ATMEL_BASE_SMC;
+
+	at91_periph_clk_enable(ATMEL_ID_SMC);
+
+	/* Configure SMC CS0 for NOR flash */
+	writel(AT91_SMC_SETUP_NWE(1) | AT91_SMC_SETUP_NCS_WR(0) |
+	       AT91_SMC_SETUP_NRD(2) | AT91_SMC_SETUP_NCS_RD(0),
+	       &smc->cs[0].setup);
+	writel(AT91_SMC_PULSE_NWE(10) | AT91_SMC_PULSE_NCS_WR(11) |
+	       AT91_SMC_PULSE_NRD(10) | AT91_SMC_PULSE_NCS_RD(11),
+	       &smc->cs[0].pulse);
+	writel(AT91_SMC_CYCLE_NWE(11) | AT91_SMC_CYCLE_NRD(14),
+	       &smc->cs[0].cycle);
+	writel(AT91_SMC_TIMINGS_TCLR(0) | AT91_SMC_TIMINGS_TADL(0)  |
+	       AT91_SMC_TIMINGS_TAR(0)  | AT91_SMC_TIMINGS_TRR(0)   |
+	       AT91_SMC_TIMINGS_TWB(0)  | AT91_SMC_TIMINGS_RBNSEL(0)|
+	       AT91_SMC_TIMINGS_NFSEL(0), &smc->cs[0].timings);
+	writel(AT91_SMC_MODE_RM_NRD | AT91_SMC_MODE_WM_NWE |
+	       AT91_SMC_MODE_EXNW_DISABLE |
+	       AT91_SMC_MODE_DBW_16 |
+	       AT91_SMC_MODE_TDF_CYCLE(1),
+	       &smc->cs[0].mode);
+
+	/* Address pin (A1 ~ A23) configuration */
+	at91_set_a_periph(AT91_PIO_PORTE, 1, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 2, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 3, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 4, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 5, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 6, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 7, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 8, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 9, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 10, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 11, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 12, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 13, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 14, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 15, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 16, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 17, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 18, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 19, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 20, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 21, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 22, 0);
+	at91_set_a_periph(AT91_PIO_PORTE, 23, 0);
+	/* CS0 pin configuration */
+	at91_set_a_periph(AT91_PIO_PORTE, 26, 0);
+}
+#endif
+
 #ifdef CONFIG_CMD_USB
 static void sama5d3xek_usb_hw_init(void)
 {
@@ -90,7 +146,6 @@ vidinfo_t panel_info = {
 	.vl_col = 800,
 	.vl_row = 480,
 	.vl_clk = 24000000,
-	.vl_sync = ATMEL_LCDC_INVLINE_NORMAL | ATMEL_LCDC_INVFRAME_NORMAL,
 	.vl_bpix = LCD_BPP,
 	.vl_tft = 1,
 	.vl_hsync_len = 128,
@@ -152,7 +207,7 @@ void lcd_show_board_info(void)
 	nand_size = 0;
 #ifdef CONFIG_NAND_ATMEL
 	for (i = 0; i < CONFIG_SYS_MAX_NAND_DEVICE; i++)
-		nand_size += nand_info[i].size;
+		nand_size += nand_info[i]->size;
 #endif
 	lcd_printf("%ld MB SDRAM, %lld MB NAND\n",
 		   dram_size >> 20, nand_size >> 20);
@@ -180,6 +235,9 @@ int board_init(void)
 
 #ifdef CONFIG_NAND_ATMEL
 	sama5d3xek_nand_hw_init();
+#endif
+#ifndef CONFIG_SYS_NO_FLASH
+	sama5d3xek_nor_hw_init();
 #endif
 #ifdef CONFIG_CMD_USB
 	sama5d3xek_usb_hw_init();
@@ -215,15 +273,25 @@ int dram_init(void)
 
 int board_phy_config(struct phy_device *phydev)
 {
-	/* rx data delay */
-	ksz9021_phy_extended_write(phydev,
-				   MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x2222);
-	/* tx data delay */
-	ksz9021_phy_extended_write(phydev,
-				   MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x2222);
-	/* rx/tx clock delay */
-	ksz9021_phy_extended_write(phydev,
-				   MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf2f4);
+	/* board specific timings for GMAC */
+	if (has_gmac()) {
+		/* rx data delay */
+		ksz9021_phy_extended_write(phydev,
+					   MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW,
+					   0x2222);
+		/* tx data delay */
+		ksz9021_phy_extended_write(phydev,
+					   MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW,
+					   0x2222);
+		/* rx/tx clock delay */
+		ksz9021_phy_extended_write(phydev,
+					   MII_KSZ9021_EXT_RGMII_CLOCK_SKEW,
+					   0xf2f4);
+	}
+
+	/* always run the PHY's config routine */
+	if (phydev->drv->config)
+		return phydev->drv->config(phydev);
 
 	return 0;
 }
@@ -301,6 +369,25 @@ void spi_cs_deactivate(struct spi_slave *slave)
 }
 #endif /* CONFIG_ATMEL_SPI */
 
+#ifdef CONFIG_BOARD_LATE_INIT
+int board_late_init(void)
+{
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	const int MAX_STR_LEN = 32;
+	char name[MAX_STR_LEN], *p;
+	int i;
+
+	strncpy(name, get_cpu_name(), MAX_STR_LEN);
+	for (i = 0, p = name; (*p) && (i < MAX_STR_LEN); p++, i++)
+		*p = tolower(*p);
+
+	strcat(name, "ek.dtb");
+	setenv("dtb_name", name);
+#endif
+	return 0;
+}
+#endif
+
 /* SPL */
 #ifdef CONFIG_SPL_BUILD
 void spl_board_init(void)
@@ -314,7 +401,7 @@ void spl_board_init(void)
 #endif
 }
 
-static void ddr2_conf(struct atmel_mpddr *ddr2)
+static void ddr2_conf(struct atmel_mpddrc_config *ddr2)
 {
 	ddr2->md = (ATMEL_MPDDRC_MD_DBW_32_BITS | ATMEL_MPDDRC_MD_DDR2_SDRAM);
 
@@ -355,22 +442,20 @@ static void ddr2_conf(struct atmel_mpddr *ddr2)
 
 void mem_init(void)
 {
-	struct at91_pmc *pmc = (struct at91_pmc *)ATMEL_BASE_PMC;
-	struct atmel_mpddr ddr2;
+	struct atmel_mpddrc_config ddr2;
 
 	ddr2_conf(&ddr2);
 
-	/* enable MPDDR clock */
+	/* Enable MPDDR clock */
 	at91_periph_clk_enable(ATMEL_ID_MPDDRC);
-	writel(0x4, &pmc->scer);
+	at91_system_clk_enable(AT91_PMC_DDR);
 
 	/* DDRAM2 Controller initialize */
-	ddr2_init(ATMEL_BASE_DDRCS, &ddr2);
+	ddr2_init(ATMEL_BASE_MPDDRC, ATMEL_BASE_DDRCS, &ddr2);
 }
 
 void at91_pmc_init(void)
 {
-	struct at91_pmc *pmc = (struct at91_pmc *)ATMEL_BASE_PMC;
 	u32 tmp;
 
 	tmp = AT91_PMC_PLLAR_29 |
@@ -379,7 +464,7 @@ void at91_pmc_init(void)
 	      AT91_PMC_PLLXR_DIV(1);
 	at91_plla_init(tmp);
 
-	writel(0x3 << 8, &pmc->pllicpr);
+	at91_pllicpr_init(AT91_PMC_IPLL_PLLA(0x3));
 
 	tmp = AT91_PMC_MCKR_MDIV_4 |
 	      AT91_PMC_MCKR_CSS_PLLA;

@@ -288,6 +288,8 @@ void do_bootvx_fdt(bootm_headers_t *images)
 		if (ret)
 			return;
 
+		fdt_fixup_ethernet(*of_flat_tree);
+
 		ret = fdt_add_subnode(*of_flat_tree, 0, "chosen");
 		if ((ret >= 0 || ret == -FDT_ERR_EXISTS)) {
 			bootline = getenv("bootargs");
@@ -404,6 +406,32 @@ static int do_bootm_integrity(int flag, int argc, char * const argv[],
 }
 #endif
 
+#ifdef CONFIG_BOOTM_OPENRTOS
+static int do_bootm_openrtos(int flag, int argc, char * const argv[],
+			   bootm_headers_t *images)
+{
+	void (*entry_point)(void);
+
+	if (flag != BOOTM_STATE_OS_GO)
+		return 0;
+
+	entry_point = (void (*)(void))images->ep;
+
+	printf("## Transferring control to OpenRTOS (at address %08lx) ...\n",
+		(ulong)entry_point);
+
+	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
+
+	/*
+	 * OpenRTOS Parameters:
+	 *   None
+	 */
+	(*entry_point)();
+
+	return 1;
+}
+#endif
+
 static boot_os_fn *boot_os[] = {
 	[IH_OS_U_BOOT] = do_bootm_standalone,
 #ifdef CONFIG_BOOTM_LINUX
@@ -434,14 +462,16 @@ static boot_os_fn *boot_os[] = {
 #ifdef CONFIG_INTEGRITY
 	[IH_OS_INTEGRITY] = do_bootm_integrity,
 #endif
+#ifdef CONFIG_BOOTM_OPENRTOS
+	[IH_OS_OPENRTOS] = do_bootm_openrtos,
+#endif
 };
 
 /* Allow for arch specific config before we boot */
-static void __arch_preboot_os(void)
+__weak void arch_preboot_os(void)
 {
 	/* please define platform specific arch_preboot_os() */
 }
-void arch_preboot_os(void) __attribute__((weak, alias("__arch_preboot_os")));
 
 int boot_selected_os(int argc, char * const argv[], int state,
 		     bootm_headers_t *images, boot_os_fn *boot_fn)
@@ -451,12 +481,12 @@ int boot_selected_os(int argc, char * const argv[], int state,
 
 	/* Stand-alone may return when 'autostart' is 'no' */
 	if (images->os.type == IH_TYPE_STANDALONE ||
+	    IS_ENABLED(CONFIG_SANDBOX) ||
 	    state == BOOTM_STATE_OS_FAKE_GO) /* We expect to return */
 		return 0;
 	bootstage_error(BOOTSTAGE_ID_BOOT_OS_RETURNED);
-#ifdef DEBUG
-	puts("\n## Control returned to monitor - resetting...\n");
-#endif
+	debug("\n## Control returned to monitor - resetting...\n");
+
 	return BOOTM_ERR_RESET;
 }
 

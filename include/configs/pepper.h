@@ -11,14 +11,12 @@
 #include <configs/ti_am335x_common.h>
 
 #undef CONFIG_BOARD_LATE_INIT
-#undef CONFIG_SPL_OS_BOOT
 
 /* Clock defines */
 #define V_OSCK				24000000  /* Clock output from T2 */
 #define V_SCLK				(V_OSCK)
 
-#undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"pepper# "
+#define CONFIG_SYS_I2C_EEPROM_ADDR	0x50
 
 /* Mach type */
 #define MACH_TYPE_PEPPER		4207	/* Until the next sync */
@@ -26,8 +24,6 @@
 
 #define CONFIG_ENV_SIZE			(128 << 10)	/* 128 KiB */
 #define CONFIG_ENV_IS_NOWHERE
-/* Display cpuinfo */
-#define CONFIG_DISPLAY_CPUINFO
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -39,7 +35,7 @@
 	"optargs=\0" \
 	"mmcdev=0\0" \
 	"mmcroot=/dev/mmcblk0p2 rw\0" \
-	"mmcrootfstype=ext3 rootwait\0" \
+	"mmcrootfstype=ext4 rootwait\0" \
 	"mmcargs=setenv bootargs console=${console} " \
 		"${optargs} " \
 		"root=${mmcroot} " \

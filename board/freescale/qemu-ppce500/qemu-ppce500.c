@@ -81,7 +81,7 @@ static int pci_map_region(void *fdt, int pci_node, int range_id,
 	ulong map_addr;
 	int r;
 
-	r = fdt_read_range(fdt, pci_node, 0, NULL, &addr, &size);
+	r = fdt_read_range(fdt, pci_node, range_id, NULL, &addr, &size);
 	if (r)
 		return r;
 
@@ -235,9 +235,11 @@ int board_eth_init(bd_t *bis)
 }
 
 #if defined(CONFIG_OF_BOARD_SETUP)
-void ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, bd_t *bd)
 {
 	FT_FSL_PCI_SETUP;
+
+	return 0;
 }
 #endif
 

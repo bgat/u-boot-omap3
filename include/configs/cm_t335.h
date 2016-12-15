@@ -19,16 +19,11 @@
 #undef CONFIG_BOARD_LATE_INIT
 #undef CONFIG_SPI
 #undef CONFIG_OMAP3_SPI
-#undef CONFIG_CMD_SPI
-#undef CONFIG_SPL_OS_BOOT
 #undef CONFIG_BOOTCOUNT_LIMIT
 #undef CONFIG_SPL_AM33XX_ENABLE_RTC32K_OSC
 
 #undef CONFIG_MAX_RAM_BANK_SIZE
 #define CONFIG_MAX_RAM_BANK_SIZE	(512 << 20)	/* 512MB */
-
-#undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"CM-T335 # "
 
 #define CONFIG_OMAP_COMMON
 
@@ -66,7 +61,6 @@
 		"run nandargs; " \
 		"nboot ${loadaddr} nand0 900000; " \
 		"bootm ${loadaddr}\0"
-
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"loadaddr=82000000\0" \
@@ -107,6 +101,7 @@
 /* I2C Configuration */
 #define CONFIG_SYS_I2C_EEPROM_ADDR	0x50	/* Main EEPROM */
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN	1
+#define CONFIG_SYS_I2C_EEPROM_BUS	0
 
 /* SPL */
 #define CONFIG_SPL_LDSCRIPT		"$(CPUDIR)/am33xx/u-boot-spl.lds"
@@ -150,6 +145,11 @@
 #define CONFIG_ENV_OFFSET		0x300000 /* environment starts here */
 #define CONFIG_SYS_ENV_SECT_SIZE	(128 << 10)	/* 128 KiB */
 #define CONFIG_SYS_NAND_ONFI_DETECTION
+#ifdef CONFIG_SPL_OS_BOOT
+#define CONFIG_CMD_SPL_NAND_OFS		0x400000 /* un-assigned: (using dtb) */
+#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS	0x500000
+#define CONFIG_CMD_SPL_WRITE_SIZE	0x2000
+#endif
 
 /* GPIO pin + bank to pin ID mapping */
 #define GPIO_PIN(_bank, _pin)		((_bank << 5) + _pin)
@@ -163,6 +163,17 @@
 #define STATUS_LED_STATE		STATUS_LED_OFF
 #define STATUS_LED_PERIOD		(CONFIG_SYS_HZ / 2)
 #define STATUS_LED_BOOT			0
+
+/* EEPROM */
+#define CONFIG_CMD_EEPROM
+#define CONFIG_ENV_EEPROM_IS_ON_I2C
+#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN		1
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS	4
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS	5
+#define CONFIG_SYS_EEPROM_SIZE			256
+
+#define CONFIG_CMD_EEPROM_LAYOUT
+#define CONFIG_EEPROM_LAYOUT_HELP_STRING "v2, v3"
 
 #ifndef CONFIG_SPL_BUILD
 /*

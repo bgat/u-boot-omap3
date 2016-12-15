@@ -71,6 +71,7 @@ extern char __bss_start[];
 extern char __bss_end[];
 extern char __image_copy_start[];
 extern char __image_copy_end[];
+extern char _image_binary_end[];
 extern char __rel_dyn_start[];
 extern char __rel_dyn_end[];
 
@@ -81,6 +82,7 @@ extern ulong __data_end;
 extern ulong __rel_dyn_start;
 extern ulong __rel_dyn_end;
 extern ulong __bss_end;
+extern ulong _image_binary_end;
 
 extern ulong _TEXT_BASE;	/* code start */
 

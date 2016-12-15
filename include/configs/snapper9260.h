@@ -15,7 +15,7 @@
 #include <asm/hardware.h>
 #include <linux/sizes.h>
 
-#define CONFIG_SYS_TEXT_BASE		0x20000000
+#define CONFIG_SYS_TEXT_BASE		0x21f00000
 
 /* ARM asynchronous clock */
 #define CONFIG_SYS_AT91_MAIN_CLOCK	18432000 /* External Crystal, in Hz */
@@ -28,9 +28,6 @@
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
 #define CONFIG_SKIP_LOWLEVEL_INIT
-#define CONFIG_SKIP_RELOCATE_UBOOT
-#define CONFIG_DISPLAY_CPUINFO
-#define CONFIG_FIT
 
 /* SDRAM */
 #define CONFIG_NR_DRAM_BANKS		1
@@ -72,7 +69,6 @@
 #define CONFIG_SYS_USB_OHCI_REGS_BASE	ATMEL_UHP_BASE
 #define CONFIG_SYS_USB_OHCI_SLOT_NAME	"at91sam9260"
 #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
-#define CONFIG_USB_STORAGE
 
 /* GPIOs and IO expander */
 #define CONFIG_ATMEL_LEGACY
@@ -84,10 +80,11 @@
 
 /* UARTs/Serial console */
 #define CONFIG_ATMEL_USART
+#ifndef CONFIG_DM_SERIAL
 #define CONFIG_USART_BASE		ATMEL_BASE_DBGU
 #define CONFIG_USART_ID			ATMEL_ID_SYS
+#endif
 #define CONFIG_BAUDRATE			115200
-#define CONFIG_SYS_PROMPT		"Snapper> "
 
 /* I2C - Bit-bashed */
 #define CONFIG_SYS_I2C
@@ -118,8 +115,6 @@
 
 /* Boot options */
 #define CONFIG_SYS_LOAD_ADDR		0x23000000
-#define CONFIG_BOOTDELAY		3
-#define CONFIG_ZERO_BOOTDELAY_CHECK
 
 #define CONFIG_BOOTP_BOOTFILESIZE
 #define CONFIG_BOOTP_BOOTPATH
@@ -141,27 +136,11 @@
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_AUTO_COMPLETE
-#define CONFIG_SYS_HUSH_PARSER
 
 /* U-Boot memory settings */
 #define CONFIG_SYS_MALLOC_LEN		(1 << 20)
 
 /* Command line configuration */
-#include <config_cmd_default.h>
-#undef CONFIG_CMD_BDI
-#undef CONFIG_CMD_FPGA
-#undef CONFIG_CMD_IMI
-#undef CONFIG_CMD_IMLS
-#undef CONFIG_CMD_LOADS
-#undef CONFIG_CMD_SOURCE
-
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_I2C
-#undef CONFIG_CMD_GPIO
-#define CONFIG_CMD_USB
-#define CONFIG_CMD_MII
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_PCA953X
 #define CONFIG_CMD_PCA953X_INFO

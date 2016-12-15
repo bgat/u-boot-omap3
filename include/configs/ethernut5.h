@@ -12,8 +12,6 @@
 
 #include <asm/hardware.h>
 
-#define CONFIG_SYS_GENERIC_BOARD
-
 /* The first stage boot loader expects u-boot running at this address. */
 #define CONFIG_SYS_TEXT_BASE	0x27000000	/* 16MB available */
 
@@ -25,7 +23,6 @@
 #define CONFIG_MACH_TYPE MACH_TYPE_ETHERNUT5
 
 /* CPU information */
-#define CONFIG_DISPLAY_CPUINFO		/* Display at console. */
 #define CONFIG_ARCH_CPU_INIT
 
 /* ARM asynchronous clock */
@@ -60,8 +57,6 @@
 /* 512kB DataFlash at NPCS0 */
 #define CONFIG_SYS_MAX_DATAFLASH_BANKS	1
 #define CONFIG_HAS_DATAFLASH
-#define CONFIG_SPI_FLASH
-#define CONFIG_SPI_FLASH_ATMEL
 #define CONFIG_ATMEL_DATAFLASH_SPI
 #define CONFIG_SYS_DATAFLASH_LOGIC_ADDR_CS0	0xC0000000
 #define DATAFLASH_TCSS			(0x1a << 16)
@@ -78,7 +73,6 @@
 
 /* SPI */
 #define CONFIG_ATMEL_SPI
-#define CONFIG_SYS_SPI_WRITE_TOUT	(5 * CONFIG_SYS_HZ)
 #define AT91_SPI_CLK			15000000
 
 /* Serial port */
@@ -92,51 +86,17 @@
 #define CONFIG_AT91_GPIO
 
 /* Command line configuration */
-#include <config_cmd_default.h>
-#undef CONFIG_CMD_BDI
-#undef CONFIG_CMD_FPGA
-#undef CONFIG_CMD_LOADS
-
 #define CONFIG_CMD_JFFS2
-#define CONFIG_CMD_MII
 #define CONFIG_CMD_MTDPARTS
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_SPI
 
-#ifdef MINIMAL_LOADER
-#undef CONFIG_CMD_CONSOLE
-#undef CONFIG_CMD_EDITENV
-#undef CONFIG_CMD_IMI
-#undef CONFIG_CMD_ITEST
-#undef CONFIG_CMD_IMLS
-#undef CONFIG_CMD_LOADB
-#undef CONFIG_CMD_LOADS
-#undef CONFIG_CMD_NFS
-#undef CONFIG_CMD_SETGETDCR
-#undef CONFIG_CMD_XIMG
-#else
-#define CONFIG_CMD_ASKENV
+#ifndef MINIMAL_LOADER
 #define CONFIG_CMD_BSP
-#define CONFIG_CMD_CACHE
-#define CONFIG_CMD_CDP
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_DNS
-#define CONFIG_CMD_EXT2
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_I2C
-#define CONFIG_CMD_MMC
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_RARP
 #define CONFIG_CMD_REISER
 #define CONFIG_CMD_SAVES
-#define CONFIG_CMD_SETEXPR
-#define CONFIG_CMD_SF
-#define CONFIG_CMD_SNTP
-#define CONFIG_CMD_UBI
 #define CONFIG_CMD_UBIFS
 #define CONFIG_CMD_UNZIP
-#define CONFIG_CMD_USB
 #endif
 
 /* NAND flash */
@@ -154,7 +114,6 @@
 
 /* JFFS2 */
 #ifdef CONFIG_CMD_JFFS2
-#define CONFIG_MTD_NAND_ECC_JFFS2
 #define CONFIG_JFFS2_CMDLINE
 #define CONFIG_JFFS2_NAND
 #endif
@@ -183,7 +142,6 @@
 #define CONFIG_SYS_USB_OHCI_REGS_BASE	0x00500000
 #define CONFIG_SYS_USB_OHCI_SLOT_NAME	"host"
 #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
-#define CONFIG_USB_STORAGE
 #endif
 
 /* RTC */
@@ -244,7 +202,6 @@
 #define CONFIG_RBTREE
 
 /* Boot command */
-#define CONFIG_BOOTDELAY	3
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
@@ -257,8 +214,6 @@
 #endif
 
 /* Misc. u-boot settings */
-#define CONFIG_SYS_PROMPT		"U-Boot> "
-#define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_CBSIZE		256
 #define CONFIG_SYS_MAXARGS		16
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + 16 \

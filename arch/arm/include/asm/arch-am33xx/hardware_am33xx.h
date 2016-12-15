@@ -39,6 +39,7 @@
 /* VTP Base address */
 #define VTP0_CTRL_ADDR			0x44E10E0C
 #define VTP1_CTRL_ADDR			0x48140E10
+#define PRM_DEVICE_INST			0x44E00F00
 
 /* DDR Base address */
 #define DDR_PHY_CMD_ADDR		0x44E12000
@@ -66,5 +67,6 @@
 /* PWMSS */
 #define PWMSS0_BASE			0x48300000
 #define AM33XX_ECAP0_BASE		0x48300100
+#define AM33XX_EPWM_BASE		0x48300200
 
 #endif /* __AM33XX_HARDWARE_AM33XX_H */

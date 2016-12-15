@@ -11,14 +11,14 @@
 #include <asm/cache.h>
 #include <asm/ppc4xx.h>
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+#ifdef CONFIG_OF_BOARD_SETUP
 #include <libfdt.h>
 #include <fdt_support.h>
 #include <asm/4xx_pcie.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-void __ft_board_setup(void *blob, bd_t *bd)
+int __ft_board_setup(void *blob, bd_t *bd)
 {
 	int rc;
 	int i;
@@ -60,8 +60,11 @@ void __ft_board_setup(void *blob, bd_t *bd)
 		printf("Unable to update property EBC mappings, err=%s\n",
 		       fdt_strerror(rc));
 	}
+
+	return 0;
 }
-void ft_board_setup(void *blob, bd_t *bd) __attribute__((weak, alias("__ft_board_setup")));
+int ft_board_setup(void *blob, bd_t *bd)
+		__attribute__((weak, alias("__ft_board_setup")));
 
 /*
  * Fixup all PCIe nodes by setting the device_type property
@@ -157,4 +160,4 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 	 */
 	fdt_pcie_setup(blob);
 }
-#endif /* CONFIG_OF_LIBFDT && CONFIG_OF_BOARD_SETUP */
+#endif /* CONFIG_OF_BOARD_SETUP */

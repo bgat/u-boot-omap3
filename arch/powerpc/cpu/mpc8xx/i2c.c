@@ -12,14 +12,12 @@
  */
 
 #include <common.h>
+#include <console.h>
 
 #ifdef CONFIG_HARD_I2C
 
 #include <commproc.h>
 #include <i2c.h>
-#ifdef CONFIG_LWMON
-#include <watchdog.h>
-#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -590,10 +588,6 @@ int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len)
 	i2c_state_t state;
 	uchar xaddr[4];
 	int rc;
-
-#ifdef CONFIG_LWMON
-	WATCHDOG_RESET();
-#endif
 
 	xaddr[0] = (addr >> 24) & 0xFF;
 	xaddr[1] = (addr >> 16) & 0xFF;

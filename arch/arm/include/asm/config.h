@@ -7,18 +7,19 @@
 #ifndef _ASM_CONFIG_H_
 #define _ASM_CONFIG_H_
 
-#define CONFIG_SYS_GENERIC_GLOBAL_DATA
-
 #define CONFIG_LMB
 #define CONFIG_SYS_BOOT_RAMDISK_HIGH
 
 #ifdef CONFIG_ARM64
-#define CONFIG_PHYS_64BIT
 #define CONFIG_STATIC_RELA
 #endif
 
-#ifdef CONFIG_FSL_LSCH3
-#include <asm/arch-fsl-lsch3/config.h>
+#if defined(CONFIG_LS102XA) || \
+	defined(CONFIG_CPU_PXA27X) || \
+	defined(CONFIG_CPU_MONAHANS) || \
+	defined(CONFIG_CPU_PXA25X) || \
+	defined(CONFIG_FSL_LAYERSCAPE)
+#include <asm/arch/config.h>
 #endif
 
 #endif

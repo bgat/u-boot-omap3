@@ -13,6 +13,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#include <config.h>
+
 /*
  *************************************************************************
  *
@@ -31,7 +33,7 @@
  *************************************************************************
  */
 
-	.section ".vectors", "x"
+	.section ".vectors", "ax"
 
 /*
  *************************************************************************
@@ -43,12 +45,13 @@
  *************************************************************************
  */
 
+_start:
+
 #ifdef CONFIG_SYS_DV_NOR_BOOT_CFG
 	.word	CONFIG_SYS_DV_NOR_BOOT_CFG
 #endif
 
-_start:
-	ldr	pc, _reset
+	b	reset
 	ldr	pc, _undefined_instruction
 	ldr	pc, _software_interrupt
 	ldr	pc, _prefetch_abort
@@ -56,6 +59,16 @@ _start:
 	ldr	pc, _not_used
 	ldr	pc, _irq
 	ldr	pc, _fiq
+
+#ifdef CONFIG_ENABLE_ARM_SOC_BOOT0_HOOK
+/*
+ * Various SoCs need something special and SoC-specific up front in
+ * order to boot, allow them to set that in their boot0.h file and then
+ * use it here.
+ */
+#include <asm/arch/boot0.h>
+ARM_SOC_BOOT0_HOOK
+#endif
 
 /*
  *************************************************************************
@@ -75,7 +88,6 @@ _start:
 	.globl	_irq
 	.globl	_fiq
 
-_reset:			.word reset
 _undefined_instruction:	.word undefined_instruction
 _software_interrupt:	.word software_interrupt
 _prefetch_abort:	.word prefetch_abort

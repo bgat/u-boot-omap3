@@ -44,6 +44,8 @@ struct f_dfu {
 	unsigned int                    poll_timeout;
 };
 
+struct dfu_entity *dfu_defer_flush;
+
 typedef int (*dfu_state_fn) (struct f_dfu *,
 			     const struct usb_ctrlrequest *,
 			     struct usb_gadget *,
@@ -79,14 +81,6 @@ static struct usb_interface_descriptor dfu_intf_runtime = {
 static struct usb_descriptor_header *dfu_runtime_descs[] = {
 	(struct usb_descriptor_header *) &dfu_intf_runtime,
 	NULL,
-};
-
-static const struct usb_qualifier_descriptor dev_qualifier = {
-	.bLength =		sizeof dev_qualifier,
-	.bDescriptorType =	USB_DT_DEVICE_QUALIFIER,
-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
-	.bDeviceClass =		USB_CLASS_VENDOR_SPEC,
-	.bNumConfigurations =	1,
 };
 
 static const char dfu_name[] = "Device Firmware Upgrade";
@@ -162,17 +156,20 @@ static void dfu_set_poll_timeout(struct dfu_status *dstat, unsigned int ms)
 static void dnload_request_complete(struct usb_ep *ep, struct usb_request *req)
 {
 	struct f_dfu *f_dfu = req->context;
+	int ret;
 
-	dfu_write(dfu_get_entity(f_dfu->altsetting), req->buf,
-		  req->length, f_dfu->blk_seq_num);
+	ret = dfu_write(dfu_get_entity(f_dfu->altsetting), req->buf,
+			req->length, f_dfu->blk_seq_num);
+	if (ret) {
+		f_dfu->dfu_status = DFU_STATUS_errUNKNOWN;
+		f_dfu->dfu_state = DFU_STATE_dfuERROR;
+	}
 }
 
 static void dnload_request_flush(struct usb_ep *ep, struct usb_request *req)
 {
 	struct f_dfu *f_dfu = req->context;
-
-	dfu_flush(dfu_get_entity(f_dfu->altsetting), req->buf,
-		  req->length, f_dfu->blk_seq_num);
+	dfu_set_defer_flush(dfu_get_entity(f_dfu->altsetting));
 }
 
 static inline int dfu_get_manifest_timeout(struct dfu_entity *dfu)
@@ -227,6 +224,7 @@ static inline void to_dfu_mode(struct f_dfu *f_dfu)
 {
 	f_dfu->usb_function.strings = dfu_strings;
 	f_dfu->usb_function.hs_descriptors = f_dfu->function;
+	f_dfu->usb_function.descriptors = f_dfu->function;
 	f_dfu->dfu_state = DFU_STATE_dfuIDLE;
 }
 
@@ -234,6 +232,7 @@ static inline void to_runtime_mode(struct f_dfu *f_dfu)
 {
 	f_dfu->usb_function.strings = NULL;
 	f_dfu->usb_function.hs_descriptors = dfu_runtime_descs;
+	f_dfu->usb_function.descriptors = dfu_runtime_descs;
 }
 
 static int handle_upload(struct usb_request *req, u16 len)
@@ -362,7 +361,7 @@ static int state_dfu_idle(struct f_dfu *f_dfu,
 		to_runtime_mode(f_dfu);
 		f_dfu->dfu_state = DFU_STATE_appIDLE;
 
-		dfu_trigger_reset();
+		g_dnl_trigger_detach();
 		break;
 	default:
 		f_dfu->dfu_state = DFU_STATE_dfuERROR;
@@ -637,7 +636,7 @@ dfu_prepare_strings(struct f_dfu *f_dfu, int n)
 
 	f_dfu->strings = calloc(sizeof(struct usb_string), n + 1);
 	if (!f_dfu->strings)
-		goto enomem;
+		return -ENOMEM;
 
 	for (i = 0; i < n; ++i) {
 		de = dfu_get_entity(i);
@@ -648,14 +647,6 @@ dfu_prepare_strings(struct f_dfu *f_dfu, int n)
 	f_dfu->strings[i].s = NULL;
 
 	return 0;
-
-enomem:
-	while (i)
-		f_dfu->strings[--i].s = NULL;
-
-	free(f_dfu->strings);
-
-	return -ENOMEM;
 }
 
 static int dfu_prepare_function(struct f_dfu *f_dfu, int n)
@@ -770,8 +761,17 @@ static int dfu_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 	debug("%s: intf:%d alt:%d\n", __func__, intf, alt);
 
 	f_dfu->altsetting = alt;
+	f_dfu->dfu_state = DFU_STATE_dfuIDLE;
+	f_dfu->dfu_status = DFU_STATUS_OK;
 
 	return 0;
+}
+
+static int __dfu_get_alt(struct usb_function *f, unsigned intf)
+{
+	struct f_dfu *f_dfu = func_to_dfu(f);
+
+	return f_dfu->altsetting;
 }
 
 /* TODO: is this really what we need here? */
@@ -796,9 +796,11 @@ static int dfu_bind_config(struct usb_configuration *c)
 		return -ENOMEM;
 	f_dfu->usb_function.name = "dfu";
 	f_dfu->usb_function.hs_descriptors = dfu_runtime_descs;
+	f_dfu->usb_function.descriptors = dfu_runtime_descs;
 	f_dfu->usb_function.bind = dfu_bind;
 	f_dfu->usb_function.unbind = dfu_unbind;
 	f_dfu->usb_function.set_alt = dfu_set_alt;
+	f_dfu->usb_function.get_alt = __dfu_get_alt;
 	f_dfu->usb_function.disable = dfu_disable;
 	f_dfu->usb_function.strings = dfu_generic_strings;
 	f_dfu->usb_function.setup = dfu_handle;
